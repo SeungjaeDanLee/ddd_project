@@ -1,5 +1,8 @@
+secret.yml
+.env
+
 HELP.md
-.gradle
+.gradle	
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

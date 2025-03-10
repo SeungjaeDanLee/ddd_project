@@ -1,4 +1,4 @@
-package com.footoff.api;
+package footoff.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

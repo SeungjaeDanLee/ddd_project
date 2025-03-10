@@ -1,4 +1,4 @@
-package com.footoff.api.global.config;
+package footoff.api.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

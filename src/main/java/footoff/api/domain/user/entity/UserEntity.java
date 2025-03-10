@@ -1,7 +1,6 @@
-package com.footoff.api.domain.user.entity;
+package footoff.api.domain.user.entity;
 
-import com.footoff.api.domain.user.domainObject.User;
-
+import footoff.api.domain.user.domainObject.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 

@@ -1,14 +1,15 @@
-package com.footoff.api.domain.user.service;
+package footoff.api.domain.user.service;
 
-import com.footoff.api.domain.user.domainObject.User;
-import com.footoff.api.domain.user.entity.UserEntity;
-import com.footoff.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+
+import footoff.api.domain.user.domainObject.User;
+import footoff.api.domain.user.entity.UserEntity;
+import footoff.api.domain.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

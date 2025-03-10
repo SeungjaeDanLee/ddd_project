@@ -1,6 +1,6 @@
-package com.footoff.api.domain.user.domainObject;
+package footoff.api.domain.user.domainObject;
 
-import com.footoff.api.domain.user.dto.UserDto;
+import footoff.api.domain.user.dto.UserDto;
 
 public class User {
 	long id;

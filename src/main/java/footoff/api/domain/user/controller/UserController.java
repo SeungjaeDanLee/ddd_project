@@ -1,4 +1,4 @@
-package com.footoff.api.domain.user.controller;
+package footoff.api.domain.user.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,10 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.footoff.api.domain.user.domainObject.User;
-import com.footoff.api.domain.user.dto.UserDto;
-import com.footoff.api.domain.user.service.UserService;
-
+import footoff.api.domain.user.domainObject.User;
+import footoff.api.domain.user.dto.UserDto;
+import footoff.api.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RestController

@@ -25,16 +25,19 @@ public class AuthService {
 		UserEntity userEntity = userRepository.findByKakaoId(kakaoId)
 				.orElseGet(() -> createNewUserEntity(kakaoProfile));
 
-		String token = jwtUtil.createAccessToken(userEntity.getKakaoId(), userEntity.getRole().toString());
+		String token = jwtUtil.createAccessToken(userEntity.getKakaoId(), userEntity.getRole());
 		httpServletResponse.setHeader("Authorization", token);
 
 		return userEntity;
 	}
 
 	private UserEntity createNewUserEntity(KakaoDTO.KakaoProfile kakaoProfile) {
-		UserEntity newUser = AuthConverter.toUserEntity(
-				kakaoProfile.getKakao_account().getProfile().getNickname()
-		);
+		UserEntity newUser = UserEntity.builder()
+				.kakaoId(kakaoProfile.getId())
+				.nickname(kakaoProfile.getKakao_account().getProfile().getNickname())
+				.role("USER")
+				.profileImage(null)
+				.build();
 		return userRepository.save(newUser);
 	}
 }

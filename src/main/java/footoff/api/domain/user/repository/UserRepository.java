@@ -1,14 +1,10 @@
 package footoff.api.domain.user.repository;
 
-import java.util.Optional;
-
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import footoff.api.domain.user.entity.UserEntity;
+import footoff.api.domain.user.entity.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
-
-    Optional<UserEntity> findByKakaoId(long kakaoId);
-}
+public interface UserRepository extends JpaRepository<User, UUID> {}

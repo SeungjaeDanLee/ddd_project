@@ -1,11 +1,20 @@
 package footoff.api.domain.user.dto;
 
-public class UserDto {
-	long id;
-	long kakaoId;
+import java.util.Date;
+import java.util.UUID;
 
-	public UserDto(long id, long kakaoId) {
+public class UserDto {
+	UUID id;
+	String name;
+	int age;
+	Date createDate;
+	Date updateDate;
+
+	public UserDto(UUID id, String name, int age, Date createDate, Date updateDate) {
 		this.id = id;
-		this.kakaoId = kakaoId;
+		this.name = name;
+		this.age = age;
+		this.createDate = createDate;
+		this.updateDate = updateDate;
 	}
 }

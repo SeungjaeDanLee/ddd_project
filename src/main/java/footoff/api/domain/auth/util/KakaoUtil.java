@@ -25,9 +25,9 @@ import java.util.Arrays;
 @Slf4j
 public class KakaoUtil {
 
-	@Value("${spring.kakao.auth.client}")
+	@Value("${kakao.auth.client}")
 	private String client;
-	@Value("${spring.kakao.auth.redirect}")
+	@Value("${kakao.auth.redirect}")
 	private String redirect;
 
 	public KakaoDTO.OAuthToken requestToken(String accessCode) {
@@ -82,6 +82,7 @@ public class KakaoUtil {
 		KakaoDTO.KakaoProfile kakaoProfile = null;
 
 		try {
+			log.info("Kakao API Response: {}", response2.getBody());
 			kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoDTO.KakaoProfile.class);
 		} catch (JsonProcessingException e) {
 			log.info(Arrays.toString(e.getStackTrace()));

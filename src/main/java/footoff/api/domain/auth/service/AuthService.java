@@ -1,62 +1,27 @@
 package footoff.api.domain.auth.service;
 
-import java.util.Date;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
-import footoff.api.domain.auth.dto.KakaoDTO;
 import footoff.api.domain.auth.entity.KakaoAccount;
-import footoff.api.domain.auth.repository.KakaoAccountRepository;
-import footoff.api.domain.auth.util.KakaoUtil;
-import footoff.api.domain.user.entity.User;
-import footoff.api.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
-@Service
-@RequiredArgsConstructor
-public class AuthService {
-	private final KakaoUtil kakaoUtil;
-	private final KakaoAccountRepository kakaoAccountRepository;
-	private final UserRepository userRepository;
-	
-	@Transactional
-	public KaKaoLoginResponseDTO kakaoLogin(String accessCode, HttpServletResponse httpServletResponse) {
-		KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
-		KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
-		Long kakaoId = kakaoProfile.getId();
-		KakaoAccount kakaoAccount = kakaoAccountRepository.findById(kakaoId).orElseGet(() -> createKakaoAccount(kakaoId, "", -1));
-
-		// String token = jwtUtil.createAccessToken(kakaoId);
-		// httpServletResponse.setHeader("Authorization", token);
-
-		return new KaKaoLoginResponseDTO(kakaoAccount.getUser().getId().toString(), oAuthToken.getAccess_token(), oAuthToken.getRefresh_token());
-	}
-
-	@Transactional
-	public KakaoAccount createKakaoAccount(Long kakaoId, String name, int age) {
-		// 1. User 엔티티 생성
-		User newUser = User.builder()
-				.id(UUID.randomUUID())
-				.name(name)
-				.age(age)
-				.createDate(new Date())
-				.updateDate(new Date())
-				.build();
-		
-		// 2. User 엔티티 저장 및 저장된 엔티티 참조
-		User savedUser = userRepository.save(newUser);
-
-		// 3. KakaoAccount 엔티티 생성
-		KakaoAccount newKakaoAccount = KakaoAccount.builder()
-				.id(kakaoId)
-				.user(savedUser) // 저장된 User 엔티티 참조
-				.build();
-		
-		// 4. KakaoAccount 엔티티 저장 및 반환
-		return kakaoAccountRepository.save(newKakaoAccount);
-	}
-}
+/**
+ * 인증 관련 서비스 인터페이스
+ */
+public interface AuthService {
+    /**
+     * 카카오 로그인 처리
+     * @param accessCode 카카오 인증 코드
+     * @param httpServletResponse HTTP 응답 객체
+     * @return 카카오 로그인 응답 DTO
+     */
+    KaKaoLoginResponseDTO kakaoLogin(String accessCode, HttpServletResponse httpServletResponse);
+    
+    /**
+     * 카카오 계정 생성
+     * @param kakaoId 카카오 ID
+     * @param name 사용자 이름
+     * @param age 사용자 나이
+     * @return 생성된 카카오 계정
+     */
+    KakaoAccount createKakaoAccount(Long kakaoId, String name, int age);
+} 

@@ -13,7 +13,7 @@ import footoff.api.domain.user.entity.User;
 import footoff.api.global.common.enums.MemberStatus;
 
 @Repository
-public interface MeetingMembershipRepository extends JpaRepository<MeetingMember, Long> {
+public interface MeetingMemberRepository extends JpaRepository<MeetingMember, Long> {
     
     List<MeetingMember> findByMeeting(Meeting meeting);
     

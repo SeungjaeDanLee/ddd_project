@@ -48,8 +48,6 @@ public class AuthServiceImpl implements AuthService {
                 .id(UUID.randomUUID())
                 .name(name)
                 .age(age)
-                .createDate(new Date())
-                .updateDate(new Date())
                 .build();
         
         // 2. User 엔티티 저장 및 저장된 엔티티 참조

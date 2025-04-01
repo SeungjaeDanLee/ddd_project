@@ -17,14 +17,14 @@ public class MembershipDto {
     private final String userName;
     private final MemberStatus status;
     private final UserRole role;
-    private final LocalDateTime joinedAt;
+    private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     
     @Builder
-    public MembershipDto(Long id, Long meetingId, String meetingTitle, 
-                        String userId, String userName,
+    public MembershipDto(Long id, Long meetingId, String meetingTitle,
+                         String userId, String userName,
                          MemberStatus status, UserRole role,
-                        LocalDateTime joinedAt, LocalDateTime updatedAt) {
+                         LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.meetingId = meetingId;
         this.meetingTitle = meetingTitle;
@@ -32,7 +32,7 @@ public class MembershipDto {
         this.userName = userName;
         this.status = status;
         this.role = role;
-        this.joinedAt = joinedAt;
+        this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
     
@@ -45,7 +45,7 @@ public class MembershipDto {
                 .userName(membership.getUser().getName())
                 .status(membership.getStatus())
                 .role(membership.getRole())
-                .joinedAt(membership.getJoinedAt())
+                .createdAt(membership.getCreatedAt())
                 .updatedAt(membership.getUpdatedAt())
                 .build();
     }

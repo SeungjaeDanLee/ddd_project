@@ -1,9 +1,10 @@
 package footoff.api.domain.user.entity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import footoff.api.domain.user.dto.UserDto;
+import footoff.api.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.AccessLevel;
 @Table(name = "user")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseEntity {
 	
 	@Id
 	@Column(columnDefinition = "BINARY(16)")
@@ -25,23 +26,20 @@ public class User {
 	
 	private int age;
 	
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date createDate;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date updateDate;
-	
 	@Builder
-	public User(UUID id, String name, int age, Date createDate, Date updateDate) {
+	public User(UUID id, String name, int age) {
 		this.id = id;
 		this.name = name;
 		this.age = age;
-		this.createDate = createDate;
-		this.updateDate = updateDate;
 	}
 
 	public UserDto toDto() {
-		return new UserDto(id, name, age, createDate, updateDate);
+		return UserDto.builder()
+            .id(id)
+            .name(name)
+            .age(age)
+            .createDate(getCreatedAt())
+            .updateDate(getUpdatedAt())
+            .build();
 	}
-	
 } 

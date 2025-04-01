@@ -13,7 +13,7 @@ import footoff.api.domain.meeting.dto.MeetingDto;
 import footoff.api.domain.meeting.dto.MembershipDto;
 import footoff.api.domain.meeting.entity.Meeting;
 import footoff.api.domain.meeting.entity.MeetingMember;
-import footoff.api.domain.meeting.repository.MeetingMembershipRepository;
+import footoff.api.domain.meeting.repository.MeetingMemberRepository;
 import footoff.api.domain.meeting.repository.MeetingRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class MeetingServiceImpl implements MeetingService {
 
     private final MeetingRepository meetingRepository;
-    private final MeetingMembershipRepository membershipRepository;
+    private final MeetingMemberRepository memberRepository;
     private final UserRepository userRepository;
 
     /**
@@ -54,8 +54,6 @@ public class MeetingServiceImpl implements MeetingService {
                 .applicationDeadline(requestDto.getApplicationDeadline())
                 .meetingDate(requestDto.getMeetingDate())
                 .organizer(organizer)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
         
         Meeting savedMeeting = meetingRepository.save(meeting);
@@ -68,7 +66,7 @@ public class MeetingServiceImpl implements MeetingService {
                 .role(UserRole.ORGANIZER)
                 .build();
         
-        membershipRepository.save(organizerMembership);
+        memberRepository.save(organizerMembership);
         
         return MeetingDto.fromEntity(savedMeeting);
     }
@@ -127,7 +125,7 @@ public class MeetingServiceImpl implements MeetingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        return membershipRepository.findByUser(user).stream()
+        return memberRepository.findByUser(user).stream()
                 .map(membership -> MeetingDto.fromEntity(membership.getMeeting()))
                 .collect(Collectors.toList());
     }
@@ -169,7 +167,7 @@ public class MeetingServiceImpl implements MeetingService {
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
         // 이미 참가 신청한 경우 체크
-        if (membershipRepository.existsByMeetingIdAndUserId(meetingId, userId)) {
+        if (memberRepository.existsByMeetingIdAndUserId(meetingId, userId)) {
             throw new IllegalStateException("이미 참가 신청한 모임입니다.");
         }
         
@@ -185,7 +183,7 @@ public class MeetingServiceImpl implements MeetingService {
                 .role(UserRole.MEMBER)
                 .build();
         
-        MeetingMember savedMembership = membershipRepository.save(membership);
+        MeetingMember savedMembership = memberRepository.save(membership);
         
         return MembershipDto.fromEntity(savedMembership);
     }
@@ -207,11 +205,11 @@ public class MeetingServiceImpl implements MeetingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        MeetingMember membership = membershipRepository.findByMeetingAndUser(meeting, user)
+        MeetingMember membership = memberRepository.findByMeetingAndUser(meeting, user)
                 .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
         
         membership.approve();
-        MeetingMember savedMembership = membershipRepository.save(membership);
+        MeetingMember savedMembership = memberRepository.save(membership);
         
         return MembershipDto.fromEntity(savedMembership);
     }
@@ -233,11 +231,11 @@ public class MeetingServiceImpl implements MeetingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        MeetingMember membership = membershipRepository.findByMeetingAndUser(meeting, user)
+        MeetingMember membership = memberRepository.findByMeetingAndUser(meeting, user)
                 .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
         
         membership.reject();
-        MeetingMember savedMembership = membershipRepository.save(membership);
+        MeetingMember savedMembership = memberRepository.save(membership);
         
         return MembershipDto.fromEntity(savedMembership);
     }
@@ -255,7 +253,7 @@ public class MeetingServiceImpl implements MeetingService {
         Meeting meeting = meetingRepository.findById(meetingId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        return membershipRepository.findByMeeting(meeting).stream()
+        return memberRepository.findByMeeting(meeting).stream()
                 .map(MembershipDto::fromEntity)
                 .collect(Collectors.toList());
     }

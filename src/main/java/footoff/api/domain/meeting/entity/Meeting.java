@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import footoff.api.domain.user.entity.User;
+import footoff.api.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "meeting")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Meeting {
+public class Meeting extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,12 +41,6 @@ public class Meeting {
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
     
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MeetingMember> memberships = new HashSet<>();
     
@@ -59,13 +54,11 @@ public class Meeting {
      * @param applicationDeadline 신청 마감 시간
      * @param meetingDate 모임 날짜
      * @param organizer 모임 주최자
-     * @param createdAt 생성 시간
-     * @param updatedAt 수정 시간
      */
     @Builder
     public Meeting(Long id, String title, String description, String address, 
                   LocalDateTime applicationDeadline, LocalDateTime meetingDate, 
-                  User organizer, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                  User organizer) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -73,8 +66,6 @@ public class Meeting {
         this.applicationDeadline = applicationDeadline;
         this.meetingDate = meetingDate;
         this.organizer = organizer;
-        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
-        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
     }
     
     /**
@@ -93,7 +84,6 @@ public class Meeting {
         this.address = address;
         this.applicationDeadline = applicationDeadline;
         this.meetingDate = meetingDate;
-        this.updatedAt = LocalDateTime.now();
     }
     
     /**

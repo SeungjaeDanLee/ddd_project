@@ -13,13 +13,13 @@ CREATE TABLE meeting (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 모임 참가자 테이블
-CREATE TABLE meeting_membership (
+CREATE TABLE meeting_member (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     meeting_id BIGINT NOT NULL,
     user_id BINARY(16) NOT NULL,
     status VARCHAR(20) NOT NULL,
     role VARCHAR(20) NOT NULL,
-    joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_meeting_user (meeting_id, user_id),
     FOREIGN KEY (meeting_id) REFERENCES meeting(id),

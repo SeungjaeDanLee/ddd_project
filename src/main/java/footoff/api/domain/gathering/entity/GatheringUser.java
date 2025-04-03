@@ -1,10 +1,8 @@
-package footoff.api.domain.meeting.entity;
-
-import java.time.LocalDateTime;
+package footoff.api.domain.gathering.entity;
 
 import footoff.api.domain.user.entity.User;
 import footoff.api.global.common.entity.BaseEntity;
-import footoff.api.global.common.enums.MemberStatus;
+import footoff.api.global.common.enums.UserStatus;
 import footoff.api.global.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -13,19 +11,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "meeting_member",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"meeting_id", "user_id"}))
+@Table(name = "gathering_user",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"gathering_id", "user_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MeetingMember extends BaseEntity {
+public class GatheringUser extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meeting_id", nullable = false)
-    private Meeting meeting;
+    @JoinColumn(name = "gathering_id", nullable = false)
+    private Gathering gathering;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,45 +31,45 @@ public class MeetingMember extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberStatus status;
+    private UserStatus status;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
     
     /**
-     * MeetingMember 엔티티를 생성하는 빌더 메소드
+     * GatheringUser 엔티티를 생성하는 빌더 메소드
      * 
-     * @param meeting 참가할 모임
+     * @param gathering 참가할 모임
      * @param user 참가하는 사용자
-     * @param status 멤버십 상태 (기본값: PENDING)
-     * @param role 멤버십 역할 (기본값: MEMBER)
+     * @param status gathering 상태 (기본값: PENDING)
+     * @param role gathering 역할 (기본값: MEMBER)
      */
     @Builder
-    public MeetingMember(Meeting meeting, User user, MemberStatus status,
+    public GatheringUser(Gathering gathering, User user, UserStatus status,
                          UserRole role) {
-        this.meeting = meeting;
+        this.gathering = gathering;
         this.user = user;
-        this.status = status != null ? status : MemberStatus.PENDING;
+        this.status = status != null ? status : UserStatus.PENDING;
         this.role = role != null ? role : UserRole.MEMBER;
     }
     
     /**
-     * 멤버십 상태를 승인으로 변경하는 메소드
+     * gathering 상태를 승인으로 변경하는 메소드
      */
     public void approve() {
-        this.status = MemberStatus.APPROVED;
+        this.status = UserStatus.APPROVED;
     }
     
     /**
-     * 멤버십 상태를 거부로 변경하는 메소드
+     * gathering 상태를 거부로 변경하는 메소드
      */
     public void reject() {
-        this.status = MemberStatus.REJECTED;
+        this.status = UserStatus.REJECTED;
     }
     
     /**
-     * 멤버십 역할을 변경하는 메소드
+     * gathering 역할을 변경하는 메소드
      * 
      * @param role 새로운 역할
      */

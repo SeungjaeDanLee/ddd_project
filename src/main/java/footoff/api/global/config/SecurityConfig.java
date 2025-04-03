@@ -14,8 +14,14 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf(csrf -> csrf.disable())
-				.authorizeHttpRequests(requests -> requests
-						.anyRequest().permitAll());
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/", "/auth/**", "/login/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+						.anyRequest().authenticated()
+				)
+				.oauth2Login(oauth2 -> oauth2
+						.defaultSuccessUrl("/loginSuccess", true)
+						.failureUrl("/loginFailure")
+				);
 		
 		return http.build();
 	}

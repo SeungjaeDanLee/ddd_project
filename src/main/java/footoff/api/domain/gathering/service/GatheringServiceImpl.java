@@ -1,4 +1,4 @@
-package footoff.api.domain.meeting.service;
+package footoff.api.domain.gathering.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,16 +8,16 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import footoff.api.domain.meeting.dto.MeetingCreateRequestDto;
-import footoff.api.domain.meeting.dto.MeetingDto;
-import footoff.api.domain.meeting.dto.MembershipDto;
-import footoff.api.domain.meeting.entity.Meeting;
-import footoff.api.domain.meeting.entity.MeetingMember;
-import footoff.api.domain.meeting.repository.MeetingMemberRepository;
-import footoff.api.domain.meeting.repository.MeetingRepository;
+import footoff.api.domain.gathering.dto.GatheringCreateRequestDto;
+import footoff.api.domain.gathering.dto.GatheringDto;
+import footoff.api.domain.gathering.dto.GatheringUserDto;
+import footoff.api.domain.gathering.entity.Gathering;
+import footoff.api.domain.gathering.entity.GatheringUser;
+import footoff.api.domain.gathering.repository.GatheringUserRepository;
+import footoff.api.domain.gathering.repository.GatheringRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
-import footoff.api.global.common.enums.MemberStatus;
+import footoff.api.global.common.enums.UserStatus;
 import footoff.api.global.common.enums.UserRole;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +27,11 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class MeetingServiceImpl implements MeetingService {
+public class GatheringServiceImpl implements GatheringService {
 
-    private final MeetingRepository meetingRepository;
-    private final MeetingMemberRepository memberRepository;
-    private final UserRepository userRepository;
+    private final GatheringRepository gatheringRepository;
+    private final GatheringUserRepository userRepository;
+    private final UserRepository systemUserRepository;
 
     /**
      * 새로운 모임을 생성하는 메소드
@@ -43,32 +43,32 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional
-    public MeetingDto createMeeting(MeetingCreateRequestDto requestDto, UUID organizerId) {
-        User organizer = userRepository.findById(organizerId)
+    public GatheringDto createGathering(GatheringCreateRequestDto requestDto, UUID organizerId) {
+        User organizer = systemUserRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        Meeting meeting = Meeting.builder()
+        Gathering gathering = Gathering.builder()
                 .title(requestDto.getTitle())
                 .description(requestDto.getDescription())
                 .address(requestDto.getAddress())
                 .applicationDeadline(requestDto.getApplicationDeadline())
-                .meetingDate(requestDto.getMeetingDate())
+                .gatheringDate(requestDto.getGatheringDate())
                 .organizer(organizer)
                 .build();
         
-        Meeting savedMeeting = meetingRepository.save(meeting);
+        Gathering savedGathering = gatheringRepository.save(gathering);
         
         // 모임 생성자를 주최자로 등록
-        MeetingMember organizerMembership = MeetingMember.builder()
-                .meeting(savedMeeting)
+        GatheringUser organizerUser = GatheringUser.builder()
+                .gathering(savedGathering)
                 .user(organizer)
-                .status(MemberStatus.APPROVED)
+                .status(UserStatus.APPROVED)
                 .role(UserRole.ORGANIZER)
                 .build();
         
-        memberRepository.save(organizerMembership);
+        userRepository.save(organizerUser);
         
-        return MeetingDto.fromEntity(savedMeeting);
+        return GatheringDto.fromEntity(savedGathering);
     }
 
     /**
@@ -80,10 +80,10 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional(readOnly = true)
-    public MeetingDto getMeeting(Long id) {
-        Meeting meeting = meetingRepository.findById(id)
+    public GatheringDto getGathering(Long id) {
+        Gathering gathering = gatheringRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
-        return MeetingDto.fromEntity(meeting);
+        return GatheringDto.fromEntity(gathering);
     }
 
     /**
@@ -93,9 +93,9 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<MeetingDto> getAllMeetings() {
-        return meetingRepository.findAll().stream()
-                .map(MeetingDto::fromEntity)
+    public List<GatheringDto> getAllGatherings() {
+        return gatheringRepository.findAll().stream()
+                .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -106,9 +106,9 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<MeetingDto> getUpcomingMeetings() {
-        return meetingRepository.findByMeetingDateAfter(LocalDateTime.now()).stream()
-                .map(MeetingDto::fromEntity)
+    public List<GatheringDto> getUpcomingGatherings() {
+        return gatheringRepository.findByGatheringDateAfter(LocalDateTime.now()).stream()
+                .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -121,12 +121,12 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<MeetingDto> getUserMeetings(UUID userId) {
-        User user = userRepository.findById(userId)
+    public List<GatheringDto> getUserGatherings(UUID userId) {
+        User user = systemUserRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        return memberRepository.findByUser(user).stream()
-                .map(membership -> MeetingDto.fromEntity(membership.getMeeting()))
+        return userRepository.findByUser(user).stream()
+                .map(gatheringUser -> GatheringDto.fromEntity(gatheringUser.getGathering()))
                 .collect(Collectors.toList());
     }
 
@@ -139,122 +139,122 @@ public class MeetingServiceImpl implements MeetingService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<MeetingDto> getOrganizerMeetings(UUID organizerId) {
-        User organizer = userRepository.findById(organizerId)
+    public List<GatheringDto> getOrganizerGatherings(UUID organizerId) {
+        User organizer = systemUserRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        return meetingRepository.findByOrganizer(organizer).stream()
-                .map(MeetingDto::fromEntity)
+        return gatheringRepository.findByOrganizer(organizer).stream()
+                .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     /**
      * 모임 참가 신청을 처리하는 메소드
      * 
-     * @param meetingId 모임 ID
+     * @param gatheringId 모임 ID
      * @param userId 사용자 ID
-     * @return 생성된 멤버십 정보
+     * @return 생성된 gathering 정보
      * @throws EntityNotFoundException 모임 또는 사용자를 찾을 수 없는 경우
      * @throws IllegalStateException 이미 참가 신청했거나 신청 기간이 마감된 경우
      */
     @Override
     @Transactional
-    public MembershipDto joinMeeting(Long meetingId, UUID userId) {
-        Meeting meeting = meetingRepository.findById(meetingId)
+    public GatheringUserDto joinGathering(Long gatheringId, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        User user = userRepository.findById(userId)
+        User user = systemUserRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
         // 이미 참가 신청한 경우 체크
-        if (memberRepository.existsByMeetingIdAndUserId(meetingId, userId)) {
+        if (userRepository.existsByGatheringIdAndUserId(gatheringId, userId)) {
             throw new IllegalStateException("이미 참가 신청한 모임입니다.");
         }
         
         // 모임 신청 마감 체크
-        if (meeting.isApplicationClosed()) {
+        if (gathering.isApplicationClosed()) {
             throw new IllegalStateException("모임 신청이 마감되었습니다.");
         }
         
-        MeetingMember membership = MeetingMember.builder()
-                .meeting(meeting)
+        GatheringUser gatheringUser = GatheringUser.builder()
+                .gathering(gathering)
                 .user(user)
-                .status(MemberStatus.PENDING)
+                .status(UserStatus.PENDING)
                 .role(UserRole.MEMBER)
                 .build();
         
-        MeetingMember savedMembership = memberRepository.save(membership);
+        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
         
-        return MembershipDto.fromEntity(savedMembership);
+        return GatheringUserDto.fromEntity(savedGatheringUser);
     }
 
     /**
      * 모임 참가 신청을 승인하는 메소드
      * 
-     * @param meetingId 모임 ID
+     * @param gatheringId 모임 ID
      * @param userId 사용자 ID
-     * @return 승인된 멤버십 정보
-     * @throws EntityNotFoundException 해당 멤버십을 찾을 수 없는 경우
+     * @return 승인된 gathering 정보
+     * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      */
     @Override
     @Transactional
-    public MembershipDto approveMembership(Long meetingId, UUID userId) {
-        Meeting meeting = meetingRepository.findById(meetingId)
+    public GatheringUserDto approveMembership(Long gatheringId, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        User user = userRepository.findById(userId)
+        User user = systemUserRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        MeetingMember membership = memberRepository.findByMeetingAndUser(meeting, user)
+        GatheringUser gatheringUser = userRepository.findByGatheringAndUser(gathering, user)
                 .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
         
-        membership.approve();
-        MeetingMember savedMembership = memberRepository.save(membership);
+        gatheringUser.approve();
+        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
         
-        return MembershipDto.fromEntity(savedMembership);
+        return GatheringUserDto.fromEntity(savedGatheringUser);
     }
 
     /**
      * 모임 참가 신청을 거부하는 메소드
      * 
-     * @param meetingId 모임 ID
+     * @param gatheringId 모임 ID
      * @param userId 사용자 ID
-     * @return 거부된 멤버십 정보
-     * @throws EntityNotFoundException 해당 멤버십을 찾을 수 없는 경우
+     * @return 거부된 gathering 정보
+     * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      */
     @Override
     @Transactional
-    public MembershipDto rejectMembership(Long meetingId, UUID userId) {
-        Meeting meeting = meetingRepository.findById(meetingId)
+    public GatheringUserDto rejectMembership(Long gatheringId, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        User user = userRepository.findById(userId)
+        User user = systemUserRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        MeetingMember membership = memberRepository.findByMeetingAndUser(meeting, user)
+        GatheringUser gatheringUser = userRepository.findByGatheringAndUser(gathering, user)
                 .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
         
-        membership.reject();
-        MeetingMember savedMembership = memberRepository.save(membership);
+        gatheringUser.reject();
+        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
         
-        return MembershipDto.fromEntity(savedMembership);
+        return GatheringUserDto.fromEntity(savedGatheringUser);
     }
 
     /**
-     * 모임의 멤버 목록을 조회하는 메소드
+     * 모임의 user 목록을 조회하는 메소드
      * 
-     * @param meetingId 모임 ID
-     * @return 모임 멤버 목록
+     * @param gatheringId 모임 ID
+     * @return 모임 user 목록
      * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
      */
     @Override
     @Transactional(readOnly = true)
-    public List<MembershipDto> getMeetingMembers(Long meetingId) {
-        Meeting meeting = meetingRepository.findById(meetingId)
+    public List<GatheringUserDto> getGatheringUsers(Long gatheringId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        return memberRepository.findByMeeting(meeting).stream()
-                .map(MembershipDto::fromEntity)
+        return userRepository.findByGathering(gathering).stream()
+                .map(GatheringUserDto::fromEntity)
                 .collect(Collectors.toList());
     }
 } 

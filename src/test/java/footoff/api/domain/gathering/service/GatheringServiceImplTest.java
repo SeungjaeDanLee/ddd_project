@@ -1,14 +1,14 @@
-package footoff.api.domain.meeting.service;
+package footoff.api.domain.gathering.service;
 
-import footoff.api.domain.meeting.dto.MeetingCreateRequestDto;
-import footoff.api.domain.meeting.dto.MeetingDto;
-import footoff.api.domain.meeting.entity.Meeting;
-import footoff.api.domain.meeting.entity.MeetingMember;
-import footoff.api.domain.meeting.repository.MeetingMemberRepository;
-import footoff.api.domain.meeting.repository.MeetingRepository;
+import footoff.api.domain.gathering.dto.GatheringCreateRequestDto;
+import footoff.api.domain.gathering.dto.GatheringDto;
+import footoff.api.domain.gathering.entity.Gathering;
+import footoff.api.domain.gathering.entity.GatheringUser;
+import footoff.api.domain.gathering.repository.GatheringUserRepository;
+import footoff.api.domain.gathering.repository.GatheringRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
-import footoff.api.global.common.enums.MemberStatus;
+import footoff.api.global.common.enums.UserStatus;
 import footoff.api.global.common.enums.UserRole;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,23 +24,23 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class MeetingServiceImplTest {
+public class GatheringServiceImplTest {
 
     @InjectMocks
-    private MeetingServiceImpl meetingService;
+    private GatheringServiceImpl gatheringService;
 
     @Mock
-    private MeetingRepository meetingRepository;
+    private GatheringRepository gatheringRepository;
 
     @Mock
-    private MeetingMemberRepository membershipRepository;
+    private GatheringUserRepository userRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepository systemUserRepository;
 
     private User testUser;
-    private Meeting testMeeting;
-    private MeetingCreateRequestDto createRequestDto;
+    private Gathering testGathering;
+    private GatheringCreateRequestDto createRequestDto;
     private UUID testUserId;
 
     @BeforeEach
@@ -54,17 +54,17 @@ public class MeetingServiceImplTest {
                 .age(30)
                 .build();
 
-        testMeeting = Meeting.builder()
+        testGathering = Gathering.builder()
                 .id(1L)
                 .title("테스트 모임")
                 .description("테스트 모임 설명")
                 .address("서울시 강남구")
                 .applicationDeadline(LocalDateTime.now().plusDays(7))
-                .meetingDate(LocalDateTime.now().plusDays(14))
+                .gatheringDate(LocalDateTime.now().plusDays(14))
                 .organizer(testUser)
                 .build();
 
-        createRequestDto = new MeetingCreateRequestDto();
+        createRequestDto = new GatheringCreateRequestDto();
         // 리플렉션으로 private 필드 설정 - 실제 구현시 setter 추가 필요
         try {
             java.lang.reflect.Field titleField = createRequestDto.getClass().getDeclaredField("title");
@@ -83,7 +83,7 @@ public class MeetingServiceImplTest {
             deadlineField.setAccessible(true);
             deadlineField.set(createRequestDto, LocalDateTime.now().plusDays(7));
 
-            java.lang.reflect.Field dateField = createRequestDto.getClass().getDeclaredField("meetingDate");
+            java.lang.reflect.Field dateField = createRequestDto.getClass().getDeclaredField("gatheringDate");
             dateField.setAccessible(true);
             dateField.set(createRequestDto, LocalDateTime.now().plusDays(14));
         } catch (Exception e) {
@@ -92,21 +92,21 @@ public class MeetingServiceImplTest {
     }
 
     @Test
-    public void createMeeting_ValidRequest_ReturnsMeetingDto() {
+    public void createGathering_ValidRequest_ReturnsGatheringDto() {
         // Given
-        when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
-        when(meetingRepository.save(any(Meeting.class))).thenReturn(testMeeting);
-        when(membershipRepository.save(any(MeetingMember.class))).thenReturn(
-                MeetingMember.builder()
-                        .meeting(testMeeting)
+        when(systemUserRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
+        when(gatheringRepository.save(any(Gathering.class))).thenReturn(testGathering);
+        when(userRepository.save(any(GatheringUser.class))).thenReturn(
+                GatheringUser.builder()
+                        .gathering(testGathering)
                         .user(testUser)
-                        .status(MemberStatus.APPROVED)
+                        .status(UserStatus.APPROVED)
                         .role(UserRole.ORGANIZER)
                         .build()
         );
 
         // When
-        MeetingDto result = meetingService.createMeeting(createRequestDto, testUserId);
+        GatheringDto result = gatheringService.createGathering(createRequestDto, testUserId);
 
         // Then
         assertNotNull(result);
@@ -115,75 +115,75 @@ public class MeetingServiceImplTest {
         assertEquals("서울시 강남구", result.getAddress());
         assertEquals(testUserId.toString(), result.getOrganizerId());
 
-        verify(userRepository, times(1)).findById(testUserId);
-        verify(meetingRepository, times(1)).save(any(Meeting.class));
-        verify(membershipRepository, times(1)).save(any(MeetingMember.class));
+        verify(systemUserRepository, times(1)).findById(testUserId);
+        verify(gatheringRepository, times(1)).save(any(Gathering.class));
+        verify(userRepository, times(1)).save(any(GatheringUser.class));
     }
 
     @Test
-    public void createMeeting_UserNotFound_ThrowsException() {
+    public void createGathering_UserNotFound_ThrowsException() {
         // Given
-        when(userRepository.findById(testUserId)).thenReturn(Optional.empty());
+        when(systemUserRepository.findById(testUserId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> {
-            meetingService.createMeeting(createRequestDto, testUserId);
+            gatheringService.createGathering(createRequestDto, testUserId);
         });
 
-        verify(userRepository, times(1)).findById(testUserId);
-        verify(meetingRepository, never()).save(any(Meeting.class));
+        verify(systemUserRepository, times(1)).findById(testUserId);
+        verify(gatheringRepository, never()).save(any(Gathering.class));
     }
 
     @Test
-    public void getMeeting_ExistingId_ReturnsMeetingDto() {
+    public void getGathering_ExistingId_ReturnsGatheringDto() {
         // Given
-        Long meetingId = 1L;
-        when(meetingRepository.findById(meetingId)).thenReturn(Optional.of(testMeeting));
+        Long gatheringId = 1L;
+        when(gatheringRepository.findById(gatheringId)).thenReturn(Optional.of(testGathering));
 
         // When
-        MeetingDto result = meetingService.getMeeting(meetingId);
+        GatheringDto result = gatheringService.getGathering(gatheringId);
 
         // Then
         assertNotNull(result);
-        assertEquals(meetingId, result.getId());
+        assertEquals(gatheringId, result.getId());
         assertEquals("테스트 모임", result.getTitle());
 
-        verify(meetingRepository, times(1)).findById(meetingId);
+        verify(gatheringRepository, times(1)).findById(gatheringId);
     }
 
     @Test
-    public void getMeeting_NonExistingId_ThrowsException() {
+    public void getGathering_NonExistingId_ThrowsException() {
         // Given
-        Long meetingId = 99L;
-        when(meetingRepository.findById(meetingId)).thenReturn(Optional.empty());
+        Long gatheringId = 99L;
+        when(gatheringRepository.findById(gatheringId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> {
-            meetingService.getMeeting(meetingId);
+            gatheringService.getGathering(gatheringId);
         });
 
-        verify(meetingRepository, times(1)).findById(meetingId);
+        verify(gatheringRepository, times(1)).findById(gatheringId);
     }
 
     @Test
-    public void getAllMeetings_ReturnsListOfMeetingDto() {
+    public void getAllGatherings_ReturnsListOfGatheringDto() {
         // Given
-        List<Meeting> meetings = new ArrayList<>();
-        meetings.add(testMeeting);
-        meetings.add(Meeting.builder()
+        List<Gathering> gatherings = new ArrayList<>();
+        gatherings.add(testGathering);
+        gatherings.add(Gathering.builder()
                 .id(2L)
                 .title("테스트 모임 2")
                 .description("테스트 모임 설명 2")
                 .address("서울시 서초구")
                 .applicationDeadline(LocalDateTime.now().plusDays(10))
-                .meetingDate(LocalDateTime.now().plusDays(20))
+                .gatheringDate(LocalDateTime.now().plusDays(20))
                 .organizer(testUser)
                 .build());
 
-        when(meetingRepository.findAll()).thenReturn(meetings);
+        when(gatheringRepository.findAll()).thenReturn(gatherings);
 
         // When
-        List<MeetingDto> result = meetingService.getAllMeetings();
+        List<GatheringDto> result = gatheringService.getAllGatherings();
 
         // Then
         assertNotNull(result);
@@ -191,6 +191,6 @@ public class MeetingServiceImplTest {
         assertEquals("테스트 모임", result.get(0).getTitle());
         assertEquals("테스트 모임 2", result.get(1).getTitle());
 
-        verify(meetingRepository, times(1)).findAll();
+        verify(gatheringRepository, times(1)).findAll();
     }
 } 

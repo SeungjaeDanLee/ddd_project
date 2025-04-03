@@ -1,4 +1,4 @@
-package footoff.api.domain.meeting.entity;
+package footoff.api.domain.gathering.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -13,10 +13,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "meeting")
+@Table(name = "gathering")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Meeting extends BaseEntity {
+public class Gathering extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,37 +34,37 @@ public class Meeting extends BaseEntity {
     @Column(name = "application_deadline")
     private LocalDateTime applicationDeadline;
     
-    @Column(name = "meeting_date", nullable = false)
-    private LocalDateTime meetingDate;
+    @Column(name = "gathering_date", nullable = false)
+    private LocalDateTime gatheringDate;
     
     @ManyToOne
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
     
-    @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<MeetingMember> memberships = new HashSet<>();
+    @OneToMany(mappedBy = "gathering", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<GatheringUser> users = new HashSet<>();
     
     /**
-     * Meeting 엔티티를 생성하는 빌더 메소드
+     * Gathering 엔티티를 생성하는 빌더 메소드
      * 
      * @param id 모임 ID
      * @param title 모임 제목
      * @param description 모임 설명
      * @param address 모임 주소
      * @param applicationDeadline 신청 마감 시간
-     * @param meetingDate 모임 날짜
+     * @param gatheringDate 모임 날짜
      * @param organizer 모임 주최자
      */
     @Builder
-    public Meeting(Long id, String title, String description, String address, 
-                  LocalDateTime applicationDeadline, LocalDateTime meetingDate, 
+    public Gathering(Long id, String title, String description, String address, 
+                  LocalDateTime applicationDeadline, LocalDateTime gatheringDate, 
                   User organizer) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.address = address;
         this.applicationDeadline = applicationDeadline;
-        this.meetingDate = meetingDate;
+        this.gatheringDate = gatheringDate;
         this.organizer = organizer;
     }
     
@@ -75,15 +75,15 @@ public class Meeting extends BaseEntity {
      * @param description 새로운 모임 설명
      * @param address 새로운 모임 주소
      * @param applicationDeadline 새로운 신청 마감 시간
-     * @param meetingDate 새로운 모임 날짜
+     * @param gatheringDate 새로운 모임 날짜
      */
-    public void updateMeeting(String title, String description, String address, 
-                            LocalDateTime applicationDeadline, LocalDateTime meetingDate) {
+    public void updateGathering(String title, String description, String address, 
+                            LocalDateTime applicationDeadline, LocalDateTime gatheringDate) {
         this.title = title;
         this.description = description;
         this.address = address;
         this.applicationDeadline = applicationDeadline;
-        this.meetingDate = meetingDate;
+        this.gatheringDate = gatheringDate;
     }
     
     /**
@@ -96,20 +96,20 @@ public class Meeting extends BaseEntity {
     }
     
     /**
-     * 모임에 새로운 멤버를 추가하는 메소드
+     * 모임에 새로운 user를 추가하는 메소드
      * 
-     * @param membership 추가할 멤버십 정보
+     * @param gatheringUser 추가할 gathering 정보
      */
-    public void addMember(MeetingMember membership) {
-        this.memberships.add(membership);
+    public void addUser(GatheringUser gatheringUser) {
+        this.users.add(gatheringUser);
     }
     
     /**
-     * 모임에서 멤버를 제거하는 메소드
+     * 모임에서 user를 제거하는 메소드
      * 
-     * @param membership 제거할 멤버십 정보
+     * @param gatheringUser 제거할 gathering 정보
      */
-    public void removeMember(MeetingMember membership) {
-        this.memberships.remove(membership);
+    public void removeUser(GatheringUser gatheringUser) {
+        this.users.remove(gatheringUser);
     }
 } 

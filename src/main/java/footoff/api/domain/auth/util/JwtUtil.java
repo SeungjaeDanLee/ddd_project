@@ -1,4 +1,4 @@
-package footoff.api.domain.auth.service;
+package footoff.api.domain.auth.util;
 
 /**
  * JWT 토큰 관련 유틸리티 인터페이스

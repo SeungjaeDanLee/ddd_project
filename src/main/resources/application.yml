@@ -5,4 +5,10 @@ spring:
     name: api
   jpa:
     hibernate:
-      ddl-auto: none
+#      개발하고 있을 때만 update 처리
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect

@@ -15,6 +15,7 @@ import footoff.api.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import footoff.api.domain.auth.util.JwtUtil;
 
 /**
  * 인증 서비스 구현체
@@ -25,6 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final KakaoUtil kakaoUtil;
     private final KakaoAccountRepository kakaoAccountRepository;
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
     
     @Override
     @Transactional
@@ -34,8 +36,8 @@ public class AuthServiceImpl implements AuthService {
         Long kakaoId = kakaoProfile.getId();
         KakaoAccount kakaoAccount = kakaoAccountRepository.findById(kakaoId).orElseGet(() -> createKakaoAccount(kakaoId, "", -1));
 
-        // String token = jwtUtil.createAccessToken(kakaoId);
-        // httpServletResponse.setHeader("Authorization", token);
+        String token = jwtUtil.createAccessToken(kakaoId, "USER");
+        httpServletResponse.setHeader("Authorization", token);
 
         return new KaKaoLoginResponseDTO(kakaoAccount.getUser().getId().toString(), oAuthToken.getAccess_token(), oAuthToken.getRefresh_token());
     }
@@ -48,8 +50,6 @@ public class AuthServiceImpl implements AuthService {
                 .id(UUID.randomUUID())
                 .name(name)
                 .age(age)
-                .createDate(new Date())
-                .updateDate(new Date())
                 .build();
         
         // 2. User 엔티티 저장 및 저장된 엔티티 참조

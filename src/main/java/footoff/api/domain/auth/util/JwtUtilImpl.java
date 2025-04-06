@@ -1,4 +1,4 @@
-package footoff.api.domain.auth.service;
+package footoff.api.domain.auth.util;
 
 import org.springframework.stereotype.Component;
 

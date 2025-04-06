@@ -3,7 +3,6 @@ package footoff.api.domain.auth.service;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -12,9 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
-import footoff.api.domain.auth.dto.KakaoDTO;
-import footoff.api.domain.auth.entity.KakaoAccount;
+import footoff.api.domain.auth.entity.UserSocialAccount;
 import footoff.api.domain.auth.repository.KakaoAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
 import footoff.api.domain.user.entity.User;
@@ -56,16 +53,16 @@ public class AuthServiceImplTest {
                 .age(age)
                 .build();
         
-        KakaoAccount savedKakaoAccount = KakaoAccount.builder()
+        UserSocialAccount savedKakaoAccount = UserSocialAccount.builder()
                 .id(kakaoId)
                 .user(savedUser)
                 .build();
         
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(kakaoAccountRepository.save(any(KakaoAccount.class))).thenReturn(savedKakaoAccount);
+        when(kakaoAccountRepository.save(any(UserSocialAccount.class))).thenReturn(savedKakaoAccount);
         
         // When
-        KakaoAccount result = authService.createKakaoAccount(kakaoId, name, age);
+        UserSocialAccount result = authService.createKakaoAccount(kakaoId, name, age);
         
         // Then
         assertNotNull(result);
@@ -75,6 +72,6 @@ public class AuthServiceImplTest {
         assertEquals(age, result.getUser().getAge());
         
         verify(userRepository, times(1)).save(any(User.class));
-        verify(kakaoAccountRepository, times(1)).save(any(KakaoAccount.class));
+        verify(kakaoAccountRepository, times(1)).save(any(UserSocialAccount.class));
     }
 } 

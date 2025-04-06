@@ -1,5 +1,6 @@
 package footoff.api.domain.user.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import footoff.api.domain.user.dto.UserDto;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
 @Entity
-@Table(name = "user")
+@Table(name = "User")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
@@ -30,6 +31,8 @@ public class User extends BaseEntity {
 		this.id = id;
 		this.name = name;
 		this.age = age;
+		this.createdAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
 	}
 
 	public UserDto toDto() {

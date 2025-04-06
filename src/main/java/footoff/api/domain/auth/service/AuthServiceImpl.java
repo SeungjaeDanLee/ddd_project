@@ -1,13 +1,13 @@
 package footoff.api.domain.auth.service;
 
-import java.util.Date;
+
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
 import footoff.api.domain.auth.dto.KakaoDTO;
-import footoff.api.domain.auth.entity.KakaoAccount;
+import footoff.api.domain.auth.entity.UserSocialAccount;
 import footoff.api.domain.auth.repository.KakaoAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
 import footoff.api.domain.user.entity.User;
@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
         KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         Long kakaoId = kakaoProfile.getId();
-        KakaoAccount kakaoAccount = kakaoAccountRepository.findById(kakaoId).orElseGet(() -> createKakaoAccount(kakaoId, "", -1));
+        UserSocialAccount kakaoAccount = kakaoAccountRepository.findById(kakaoId).orElseGet(() -> createKakaoAccount(kakaoId, "", -1));
 
         String token = jwtUtil.createAccessToken(kakaoId, "USER");
         httpServletResponse.setHeader("Authorization", token);
@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public KakaoAccount createKakaoAccount(Long kakaoId, String name, int age) {
+    public UserSocialAccount createKakaoAccount(Long kakaoId, String name, int age) {
         // 1. User 엔티티 생성
         User newUser = User.builder()
                 .id(UUID.randomUUID())
@@ -56,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepository.save(newUser);
 
         // 3. KakaoAccount 엔티티 생성
-        KakaoAccount newKakaoAccount = KakaoAccount.builder()
+        UserSocialAccount newKakaoAccount = UserSocialAccount.builder()
                 .id(kakaoId)
                 .user(savedUser) // 저장된 User 엔티티 참조
                 .build();

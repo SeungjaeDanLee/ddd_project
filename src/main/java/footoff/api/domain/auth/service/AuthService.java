@@ -1,7 +1,7 @@
 package footoff.api.domain.auth.service;
 
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
-import footoff.api.domain.auth.entity.KakaoAccount;
+import footoff.api.domain.auth.entity.UserSocialAccount;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -23,5 +23,5 @@ public interface AuthService {
      * @param age 사용자 나이
      * @return 생성된 카카오 계정
      */
-    KakaoAccount createKakaoAccount(Long kakaoId, String name, int age);
+    UserSocialAccount createKakaoAccount(Long kakaoId, String name, int age);
 } 

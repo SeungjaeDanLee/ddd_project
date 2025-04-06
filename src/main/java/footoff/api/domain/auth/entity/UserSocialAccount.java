@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class KakaoAccount {
+public class UserSocialAccount {
 	@Id
 	private Long id;
 
@@ -21,7 +21,7 @@ public class KakaoAccount {
 	private User user;
 
 	@Builder
-	public KakaoAccount(Long id, User user) {
+	public UserSocialAccount(Long id, User user) {
 		this.id = id;
 		this.user = user;
 	}

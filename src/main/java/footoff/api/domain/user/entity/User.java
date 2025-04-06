@@ -1,6 +1,5 @@
 package footoff.api.domain.user.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import footoff.api.domain.user.dto.UserDto;

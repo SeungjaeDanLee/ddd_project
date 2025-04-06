@@ -33,10 +33,10 @@ CREATE TABLE UserProfile (
 -- 유저 관심사
 CREATE TABLE UserInterest (
                               id INT AUTO_INCREMENT PRIMARY KEY,
-                              profile_id BINARY(16) NOT NULL,
+                              user_id BINARY(16) NOT NULL,
                               interest_name VARCHAR(100) NOT NULL,
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                              FOREIGN KEY (profile_id) REFERENCES UserProfile(id) ON DELETE CASCADE
+                              FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
 );
 
 -- 모임

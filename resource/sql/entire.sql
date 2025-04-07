@@ -1,8 +1,12 @@
 -- 유저
 CREATE TABLE User (
                       id BINARY(16) NOT NULL PRIMARY KEY,
-                      name VARCHAR(32) NULL,
-                      age INT NULL,
+                      phone_number VARCHAR(20),
+                      email VARCHAR(50),
+                      status VARCHAR(20) DEFAULT 'ACTIVE',
+                      language VARCHAR(10) DEFAULT 'KO',
+                      is_verified boolean DEFAULT FALSE,
+                      last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -11,9 +15,10 @@ CREATE TABLE User (
 CREATE TABLE UserSocialAccount (
                                    id INT AUTO_INCREMENT PRIMARY KEY,
                                    user_id BINARY(16) NOT NULL,
-                                   provider VARCHAR(20) NOT NULL, -- ENUM -> VARCHAR(20)
-                                   provider_id VARCHAR(255) NOT NULL UNIQUE,
+                                   social_provider VARCHAR(20) NOT NULL, -- ENUM -> VARCHAR(20)
+                                   social_provider_id VARCHAR(255) NOT NULL UNIQUE,
                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
 );
 
@@ -22,9 +27,14 @@ CREATE TABLE UserProfile (
                              id INT AUTO_INCREMENT PRIMARY KEY,
                              user_id BINARY(16) NOT NULL UNIQUE,
                              profile_image VARCHAR(255),
-                             mbti VARCHAR(10),
-                             job VARCHAR(100),
+                             nickname VARCHAR(30),
+                             age INT(3),
+                             gender VARCHAR(10),
                              introduction TEXT,
+                             mbti VARCHAR(4),
+                             location VARCHAR(30),
+                             job VARCHAR(30),
+                             hobby VARCHAR(30),
                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                              FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
@@ -33,20 +43,23 @@ CREATE TABLE UserProfile (
 -- 유저 관심사
 CREATE TABLE UserInterest (
                               id INT AUTO_INCREMENT PRIMARY KEY,
-                              user_id BINARY(16) NOT NULL,
+                              profile_id INT NOT NULL,
                               interest_name VARCHAR(100) NOT NULL,
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                              FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
+                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                              FOREIGN KEY (profile_id) REFERENCES UserProfile(id) ON DELETE CASCADE
 );
 
 -- 모임
 CREATE TABLE Gathering (
                            id INT AUTO_INCREMENT PRIMARY KEY,
-                           title VARCHAR(255) NOT NULL,
+                           title VARCHAR(50) NOT NULL,
                            description TEXT,
-                           application_deadline DATETIME NOT NULL,
+#                            application_deadline DATETIME NOT NULL,
                            gathering_date DATETIME NOT NULL,
+                           mim_users INT NOT NULL,
                            max_users INT NOT NULL,
+                           fee INT NOT NULL,
                            organizer_id BINARY(16) NOT NULL,
                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

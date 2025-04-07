@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import footoff.api.domain.auth.entity.UserSocialAccount;
 
 @Repository
-public interface KakaoAccountRepository extends JpaRepository<UserSocialAccount, Long> {
+public interface UserSocialAccountRepository extends JpaRepository<UserSocialAccount, Long> {
 
 }

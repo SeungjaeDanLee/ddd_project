@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import footoff.api.domain.auth.entity.UserSocialAccount;
-import footoff.api.domain.auth.repository.KakaoAccountRepository;
+import footoff.api.domain.auth.repository.UserSocialAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
@@ -27,7 +27,7 @@ public class AuthServiceImplTest {
     private KakaoUtil kakaoUtil;
 
     @Mock
-    private KakaoAccountRepository kakaoAccountRepository;
+    private UserSocialAccountRepository userSocialAccountRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -59,7 +59,7 @@ public class AuthServiceImplTest {
                 .build();
         
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(kakaoAccountRepository.save(any(UserSocialAccount.class))).thenReturn(savedKakaoAccount);
+        when(userSocialAccountRepository.save(any(UserSocialAccount.class))).thenReturn(savedKakaoAccount);
         
         // When
         UserSocialAccount result = authService.createKakaoAccount(kakaoId, name, age);
@@ -72,6 +72,6 @@ public class AuthServiceImplTest {
         assertEquals(age, result.getUser().getAge());
         
         verify(userRepository, times(1)).save(any(User.class));
-        verify(kakaoAccountRepository, times(1)).save(any(UserSocialAccount.class));
+        verify(userSocialAccountRepository, times(1)).save(any(UserSocialAccount.class));
     }
 } 

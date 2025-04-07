@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
 import footoff.api.domain.auth.dto.KakaoDTO;
 import footoff.api.domain.auth.entity.UserSocialAccount;
-import footoff.api.domain.auth.repository.KakaoAccountRepository;
+import footoff.api.domain.auth.repository.UserSocialAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
@@ -24,7 +24,7 @@ import footoff.api.domain.auth.util.JwtUtil;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final KakaoUtil kakaoUtil;
-    private final KakaoAccountRepository kakaoAccountRepository;
+    private final UserSocialAccountRepository userSocialAccountRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     
@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
         KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         Long kakaoId = kakaoProfile.getId();
-        UserSocialAccount kakaoAccount = kakaoAccountRepository.findById(kakaoId).orElseGet(() -> createKakaoAccount(kakaoId, "", -1));
+        UserSocialAccount kakaoAccount = userSocialAccountRepository.findById(kakaoId).orElseGet(() -> createKakaoAccount(kakaoId, "", -1));
 
         String token = jwtUtil.createAccessToken(kakaoId, "USER");
         httpServletResponse.setHeader("Authorization", token);
@@ -62,6 +62,6 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         
         // 4. KakaoAccount 엔티티 저장 및 반환
-        return kakaoAccountRepository.save(newKakaoAccount);
+        return userSocialAccountRepository.save(newKakaoAccount);
     }
 } 

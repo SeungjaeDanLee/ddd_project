@@ -3,8 +3,8 @@ package footoff.api.domain.gathering.dto;
 import java.time.LocalDateTime;
 
 import footoff.api.domain.gathering.entity.GatheringUser;
-import footoff.api.global.common.enums.UserStatus;
-import footoff.api.global.common.enums.UserRole;
+import footoff.api.global.common.enums.GatheringUserStatus;
+import footoff.api.global.common.enums.GatheringUserRole;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,15 +15,15 @@ public class GatheringUserDto {
     private final String gatheringTitle;
     private final String userId;
     private final String userEmail;
-    private final UserStatus status;
-    private final UserRole role;
+    private final GatheringUserStatus status;
+    private final GatheringUserRole role;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     
     @Builder
     public GatheringUserDto(Long id, Long gatheringId, String gatheringTitle,
                             String userId, String userEmail,
-                            UserStatus status, UserRole role,
+                            GatheringUserStatus status, GatheringUserRole role,
                             LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.gatheringId = gatheringId;

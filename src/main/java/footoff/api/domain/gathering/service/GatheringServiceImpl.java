@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import footoff.api.domain.gathering.entity.GatheringLocation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +18,8 @@ import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.gathering.repository.GatheringRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
-import footoff.api.global.common.enums.UserStatus;
-import footoff.api.global.common.enums.UserRole;
+import footoff.api.global.common.enums.GatheringUserStatus;
+import footoff.api.global.common.enums.GatheringUserRole;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -46,25 +47,38 @@ public class GatheringServiceImpl implements GatheringService {
     public GatheringDto createGathering(GatheringCreateRequestDto requestDto, UUID organizerId) {
         User organizer = systemUserRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        
+
+        // Gathering 생성
         Gathering gathering = Gathering.builder()
                 .title(requestDto.getTitle())
                 .description(requestDto.getDescription())
                 .gatheringDate(requestDto.getGatheringDate())
-                .minUsers(1)
-                .maxUsers(10)
-                .fee(0)
+                .minUsers(requestDto.getMinUsers())
+                .maxUsers(requestDto.getMaxUsers())
+                .fee(requestDto.getFee())
                 .organizer(organizer)
                 .build();
-        
+
+        // Location 생성 및 양방향 설정
+        GatheringLocation location = GatheringLocation.builder()
+                .gathering(gathering) // 연관 주입
+                .latitude(requestDto.getLocation().getLatitude())
+                .longitude(requestDto.getLocation().getLongitude())
+                .address(requestDto.getLocation().getAddress())
+                .placeName(requestDto.getLocation().getPlaceName())
+                .build();
+
+        gathering.setLocation(location); // 양방향 설정
+
+        // save 한 번으로 모임 + 장소 저장
         Gathering savedGathering = gatheringRepository.save(gathering);
-        
+
         // 모임 생성자를 주최자로 등록
         GatheringUser organizerUser = GatheringUser.builder()
                 .gathering(savedGathering)
                 .user(organizer)
-                .status(UserStatus.APPROVED)
-                .role(UserRole.ORGANIZER)
+                .status(GatheringUserStatus.APPROVED)
+                .role(GatheringUserRole.ORGANIZER)
                 .build();
         
         userRepository.save(organizerUser);
@@ -181,8 +195,8 @@ public class GatheringServiceImpl implements GatheringService {
         GatheringUser gatheringUser = GatheringUser.builder()
                 .gathering(gathering)
                 .user(user)
-                .status(UserStatus.PENDING)
-                .role(UserRole.MEMBER)
+                .status(GatheringUserStatus.PENDING)
+                .role(GatheringUserRole.PARTICIPANT)
                 .build();
         
         GatheringUser savedGatheringUser = userRepository.save(gatheringUser);

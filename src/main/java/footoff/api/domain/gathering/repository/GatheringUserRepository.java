@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringUser;
 import footoff.api.domain.user.entity.User;
-import footoff.api.global.common.enums.UserStatus;
+import footoff.api.global.common.enums.GatheringUserStatus;
 
 @Repository
 public interface GatheringUserRepository extends JpaRepository<GatheringUser, Long> {
@@ -19,7 +19,7 @@ public interface GatheringUserRepository extends JpaRepository<GatheringUser, Lo
     
     List<GatheringUser> findByUser(User user);
     
-    List<GatheringUser> findByGatheringAndStatus(Gathering gathering, UserStatus status);
+    List<GatheringUser> findByGatheringAndStatus(Gathering gathering, GatheringUserStatus status);
     
     Optional<GatheringUser> findByGatheringAndUser(Gathering gathering, User user);
     

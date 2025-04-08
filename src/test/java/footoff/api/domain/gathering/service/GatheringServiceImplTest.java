@@ -11,8 +11,8 @@ import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
 import footoff.api.global.common.enums.Language;
 import footoff.api.global.common.enums.UserActivityStatus;
-import footoff.api.global.common.enums.UserStatus;
-import footoff.api.global.common.enums.UserRole;
+import footoff.api.global.common.enums.GatheringUserStatus;
+import footoff.api.global.common.enums.GatheringUserRole;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,8 +114,8 @@ public class GatheringServiceImplTest {
                 GatheringUser.builder()
                         .gathering(testGathering)
                         .user(testUser)
-                        .status(UserStatus.APPROVED)
-                        .role(UserRole.ORGANIZER)
+                        .status(GatheringUserStatus.APPROVED)
+                        .role(GatheringUserRole.ORGANIZER)
                         .build()
         );
 

@@ -3,11 +3,14 @@ package footoff.api.domain.gathering.service;
 import footoff.api.domain.gathering.dto.GatheringCreateRequestDto;
 import footoff.api.domain.gathering.dto.GatheringDto;
 import footoff.api.domain.gathering.entity.Gathering;
+import footoff.api.domain.gathering.entity.GatheringLocation;
 import footoff.api.domain.gathering.entity.GatheringUser;
 import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.gathering.repository.GatheringRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
+import footoff.api.global.common.enums.Language;
+import footoff.api.global.common.enums.UserActivityStatus;
 import footoff.api.global.common.enums.UserStatus;
 import footoff.api.global.common.enums.UserRole;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,6 +43,7 @@ public class GatheringServiceImplTest {
 
     private User testUser;
     private Gathering testGathering;
+    private GatheringLocation testLocation;
     private GatheringCreateRequestDto createRequestDto;
     private UUID testUserId;
 
@@ -50,18 +54,32 @@ public class GatheringServiceImplTest {
         testUserId = UUID.randomUUID();
         testUser = User.builder()
                 .id(testUserId)
-                .name("테스트유저")
-                .age(30)
+                .email("test@example.com")
+                .phoneNumber("010-1234-5678")
+                .status(UserActivityStatus.ACTIVE)
+                .language(Language.KO)
+                .isVerified(false)
+                .lastLoginAt(LocalDateTime.now())
                 .build();
 
         testGathering = Gathering.builder()
                 .id(1L)
                 .title("테스트 모임")
                 .description("테스트 모임 설명")
-                .address("서울시 강남구")
-                .applicationDeadline(LocalDateTime.now().plusDays(7))
                 .gatheringDate(LocalDateTime.now().plusDays(14))
+                .minUsers(1)
+                .maxUsers(10)
+                .fee(0)
                 .organizer(testUser)
+                .build();
+                
+        testLocation = GatheringLocation.builder()
+                .id(1L)
+                .gathering(testGathering)
+                .latitude(37.5665)
+                .longitude(126.9780)
+                .address("서울시 강남구")
+                .placeName("테스트 장소")
                 .build();
 
         createRequestDto = new GatheringCreateRequestDto();
@@ -78,10 +96,6 @@ public class GatheringServiceImplTest {
             java.lang.reflect.Field addressField = createRequestDto.getClass().getDeclaredField("address");
             addressField.setAccessible(true);
             addressField.set(createRequestDto, "서울시 강남구");
-
-            java.lang.reflect.Field deadlineField = createRequestDto.getClass().getDeclaredField("applicationDeadline");
-            deadlineField.setAccessible(true);
-            deadlineField.set(createRequestDto, LocalDateTime.now().plusDays(7));
 
             java.lang.reflect.Field dateField = createRequestDto.getClass().getDeclaredField("gatheringDate");
             dateField.setAccessible(true);
@@ -112,7 +126,6 @@ public class GatheringServiceImplTest {
         assertNotNull(result);
         assertEquals("테스트 모임", result.getTitle());
         assertEquals("테스트 모임 설명", result.getDescription());
-        assertEquals("서울시 강남구", result.getAddress());
         assertEquals(testUserId.toString(), result.getOrganizerId());
 
         verify(systemUserRepository, times(1)).findById(testUserId);
@@ -138,6 +151,8 @@ public class GatheringServiceImplTest {
     public void getGathering_ExistingId_ReturnsGatheringDto() {
         // Given
         Long gatheringId = 1L;
+        // Set up the testGathering to have a location
+        testGathering.setLocation(testLocation);
         when(gatheringRepository.findById(gatheringId)).thenReturn(Optional.of(testGathering));
 
         // When
@@ -147,6 +162,7 @@ public class GatheringServiceImplTest {
         assertNotNull(result);
         assertEquals(gatheringId, result.getId());
         assertEquals("테스트 모임", result.getTitle());
+        assertEquals("서울시 강남구", result.getAddress()); // This should come from the location
 
         verify(gatheringRepository, times(1)).findById(gatheringId);
     }
@@ -168,17 +184,32 @@ public class GatheringServiceImplTest {
     @Test
     public void getAllGatherings_ReturnsListOfGatheringDto() {
         // Given
-        List<Gathering> gatherings = new ArrayList<>();
-        gatherings.add(testGathering);
-        gatherings.add(Gathering.builder()
+        Gathering testGathering2 = Gathering.builder()
                 .id(2L)
                 .title("테스트 모임 2")
                 .description("테스트 모임 설명 2")
-                .address("서울시 서초구")
-                .applicationDeadline(LocalDateTime.now().plusDays(10))
                 .gatheringDate(LocalDateTime.now().plusDays(20))
+                .minUsers(1)
+                .maxUsers(20)
+                .fee(5000)
                 .organizer(testUser)
-                .build());
+                .build();
+                
+        GatheringLocation testLocation2 = GatheringLocation.builder()
+                .id(2L)
+                .gathering(testGathering2)
+                .latitude(37.5665)
+                .longitude(126.9780)
+                .address("서울시 서초구")
+                .placeName("테스트 장소 2")
+                .build();
+                
+        testGathering.setLocation(testLocation);
+        testGathering2.setLocation(testLocation2);
+        
+        List<Gathering> gatherings = new ArrayList<>();
+        gatherings.add(testGathering);
+        gatherings.add(testGathering2);
 
         when(gatheringRepository.findAll()).thenReturn(gatherings);
 
@@ -190,6 +221,8 @@ public class GatheringServiceImplTest {
         assertEquals(2, result.size());
         assertEquals("테스트 모임", result.get(0).getTitle());
         assertEquals("테스트 모임 2", result.get(1).getTitle());
+        assertEquals("서울시 강남구", result.get(0).getAddress());
+        assertEquals("서울시 서초구", result.get(1).getAddress());
 
         verify(gatheringRepository, times(1)).findAll();
     }

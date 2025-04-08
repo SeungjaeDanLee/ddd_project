@@ -3,8 +3,8 @@ package footoff.api.domain.user.service;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +16,8 @@ import org.mockito.MockitoAnnotations;
 
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
+import footoff.api.global.common.enums.Language;
+import footoff.api.global.common.enums.UserActivityStatus;
 
 public class UserServiceImplTest {
 
@@ -35,18 +37,22 @@ public class UserServiceImplTest {
         // Given
         User user1 = User.builder()
                 .id(UUID.randomUUID())
-                .name("사용자1")
-                .age(25)
-                .createDate(new Date())
-                .updateDate(new Date())
+                .email("user1@example.com")
+                .phoneNumber("010-1234-5678")
+                .status(UserActivityStatus.ACTIVE)
+                .language(Language.KO)
+                .isVerified(false)
+                .lastLoginAt(LocalDateTime.now())
                 .build();
         
         User user2 = User.builder()
                 .id(UUID.randomUUID())
-                .name("사용자2")
-                .age(30)
-                .createDate(new Date())
-                .updateDate(new Date())
+                .email("user2@example.com")
+                .phoneNumber("010-9876-5432")
+                .status(UserActivityStatus.ACTIVE)
+                .language(Language.EN)
+                .isVerified(true)
+                .lastLoginAt(LocalDateTime.now())
                 .build();
         
         List<User> expectedUsers = Arrays.asList(user1, user2);

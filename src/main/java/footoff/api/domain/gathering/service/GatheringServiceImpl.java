@@ -50,9 +50,10 @@ public class GatheringServiceImpl implements GatheringService {
         Gathering gathering = Gathering.builder()
                 .title(requestDto.getTitle())
                 .description(requestDto.getDescription())
-                .address(requestDto.getAddress())
-                .applicationDeadline(requestDto.getApplicationDeadline())
                 .gatheringDate(requestDto.getGatheringDate())
+                .minUsers(1)
+                .maxUsers(10)
+                .fee(0)
                 .organizer(organizer)
                 .build();
         
@@ -172,7 +173,8 @@ public class GatheringServiceImpl implements GatheringService {
         }
         
         // 모임 신청 마감 체크
-        if (gathering.isApplicationClosed()) {
+        LocalDateTime now = LocalDateTime.now();
+        if (gathering.getGatheringDate().isBefore(now)) {
             throw new IllegalStateException("모임 신청이 마감되었습니다.");
         }
         

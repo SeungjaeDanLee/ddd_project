@@ -14,7 +14,7 @@ public class GatheringUserDto {
     private final Long gatheringId;
     private final String gatheringTitle;
     private final String userId;
-    private final String userName;
+    private final String userEmail;
     private final UserStatus status;
     private final UserRole role;
     private final LocalDateTime createdAt;
@@ -22,14 +22,14 @@ public class GatheringUserDto {
     
     @Builder
     public GatheringUserDto(Long id, Long gatheringId, String gatheringTitle,
-                            String userId, String userName,
+                            String userId, String userEmail,
                             UserStatus status, UserRole role,
                             LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.gatheringId = gatheringId;
         this.gatheringTitle = gatheringTitle;
         this.userId = userId;
-        this.userName = userName;
+        this.userEmail = userEmail;
         this.status = status;
         this.role = role;
         this.createdAt = createdAt;
@@ -42,7 +42,7 @@ public class GatheringUserDto {
                 .gatheringId(gatheringUser.getGathering().getId())
                 .gatheringTitle(gatheringUser.getGathering().getTitle())
                 .userId(gatheringUser.getUser().getId().toString())
-                .userName(gatheringUser.getUser().getName())
+                .userEmail(gatheringUser.getUser().getEmail())
                 .status(gatheringUser.getStatus())
                 .role(gatheringUser.getRole())
                 .createdAt(gatheringUser.getCreatedAt())

@@ -3,6 +3,7 @@ package footoff.api.domain.auth.service;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,9 @@ import footoff.api.domain.auth.repository.UserSocialAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
+import footoff.api.global.common.enums.Language;
+import footoff.api.global.common.enums.SocialProvider;
+import footoff.api.global.common.enums.UserActivityStatus;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class AuthServiceImplTest {
@@ -44,32 +48,36 @@ public class AuthServiceImplTest {
     public void createKakaoAccount_ShouldCreateAndSaveUser() {
         // Given
         Long kakaoId = 123456L;
-        String name = "테스트사용자";
-        int age = 25;
-        
+
         User savedUser = User.builder()
                 .id(UUID.randomUUID())
-                .name(name)
-                .age(age)
+                .email("")
+                .phoneNumber("")
+                .status(UserActivityStatus.ACTIVE)
+                .language(Language.KO)
+                .isVerified(false)
+                .lastLoginAt(LocalDateTime.now())
                 .build();
         
-        UserSocialAccount savedKakaoAccount = UserSocialAccount.builder()
+        UserSocialAccount savedSocialAccount = UserSocialAccount.builder()
                 .id(kakaoId)
                 .user(savedUser)
+                .socialProvider(SocialProvider.KAKAO)
+                .socialProviderId(kakaoId.toString())
                 .build();
         
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(userSocialAccountRepository.save(any(UserSocialAccount.class))).thenReturn(savedKakaoAccount);
+        when(userSocialAccountRepository.save(any(UserSocialAccount.class))).thenReturn(savedSocialAccount);
         
         // When
-        UserSocialAccount result = authService.createKakaoAccount(kakaoId, name, age);
+        UserSocialAccount result = authService.createKakaoAccount(kakaoId);
         
         // Then
         assertNotNull(result);
         assertEquals(kakaoId, result.getId());
         assertEquals(savedUser, result.getUser());
-        assertEquals(name, result.getUser().getName());
-        assertEquals(age, result.getUser().getAge());
+        assertEquals(SocialProvider.KAKAO, result.getSocialProvider());
+        assertEquals(kakaoId.toString(), result.getSocialProviderId());
         
         verify(userRepository, times(1)).save(any(User.class));
         verify(userSocialAccountRepository, times(1)).save(any(UserSocialAccount.class));

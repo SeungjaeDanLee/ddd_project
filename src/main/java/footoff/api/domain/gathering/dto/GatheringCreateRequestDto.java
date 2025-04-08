@@ -26,6 +26,7 @@ public class GatheringCreateRequestDto {
     @Min(2)
     private int minUsers;
 
+    @Min(2)
     private int maxUsers;
 
     private int fee;

@@ -31,8 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
-    private final GatheringUserRepository userRepository;
-    private final UserRepository systemUserRepository;
+    private final GatheringUserRepository gatheringUserRepository;
+    private final UserRepository userRepository;
 
     /**
      * 새로운 모임을 생성하는 메소드
@@ -45,7 +45,7 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional
     public GatheringDto createGathering(GatheringCreateRequestDto requestDto, UUID organizerId) {
-        User organizer = systemUserRepository.findById(organizerId)
+        User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // Gathering 생성
@@ -80,8 +80,8 @@ public class GatheringServiceImpl implements GatheringService {
                 .status(GatheringUserStatus.APPROVED)
                 .role(GatheringUserRole.ORGANIZER)
                 .build();
-        
-        userRepository.save(organizerUser);
+
+        gatheringUserRepository.save(organizerUser);
         
         return GatheringDto.fromEntity(savedGathering);
     }
@@ -137,10 +137,10 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getUserGatherings(UUID userId) {
-        User user = systemUserRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        return userRepository.findByUser(user).stream()
+        return gatheringUserRepository.findByUser(user).stream()
                 .map(gatheringUser -> GatheringDto.fromEntity(gatheringUser.getGathering()))
                 .collect(Collectors.toList());
     }
@@ -155,7 +155,7 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getOrganizerGatherings(UUID organizerId) {
-        User organizer = systemUserRepository.findById(organizerId)
+        User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
         return gatheringRepository.findByOrganizer(organizer).stream()
@@ -178,11 +178,11 @@ public class GatheringServiceImpl implements GatheringService {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        User user = systemUserRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
         // 이미 참가 신청한 경우 체크
-        if (userRepository.existsByGatheringIdAndUserId(gatheringId, userId)) {
+        if (gatheringUserRepository.existsByGatheringIdAndUserId(gatheringId, userId)) {
             throw new IllegalStateException("이미 참가 신청한 모임입니다.");
         }
         
@@ -199,7 +199,7 @@ public class GatheringServiceImpl implements GatheringService {
                 .role(GatheringUserRole.PARTICIPANT)
                 .build();
         
-        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
+        GatheringUser savedGatheringUser = gatheringUserRepository.save(gatheringUser);
         
         return GatheringUserDto.fromEntity(savedGatheringUser);
     }
@@ -218,14 +218,14 @@ public class GatheringServiceImpl implements GatheringService {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        User user = systemUserRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        GatheringUser gatheringUser = userRepository.findByGatheringAndUser(gathering, user)
+        GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
                 .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
         
         gatheringUser.approve();
-        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
+        GatheringUser savedGatheringUser = gatheringUserRepository.save(gatheringUser);
         
         return GatheringUserDto.fromEntity(savedGatheringUser);
     }
@@ -244,14 +244,14 @@ public class GatheringServiceImpl implements GatheringService {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        User user = systemUserRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         
-        GatheringUser gatheringUser = userRepository.findByGatheringAndUser(gathering, user)
+        GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
                 .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
         
         gatheringUser.reject();
-        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
+        GatheringUser savedGatheringUser = gatheringUserRepository.save(gatheringUser);
         
         return GatheringUserDto.fromEntity(savedGatheringUser);
     }
@@ -269,7 +269,7 @@ public class GatheringServiceImpl implements GatheringService {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
         
-        return userRepository.findByGathering(gathering).stream()
+        return gatheringUserRepository.findByGathering(gathering).stream()
                 .map(GatheringUserDto::fromEntity)
                 .collect(Collectors.toList());
     }

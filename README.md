@@ -2,6 +2,7 @@
 
 ## 프로젝트 소개
 이 프로젝트는 Spring Boot 기반의 백엔드 API 서버로, 카카오 OAuth 로그인 기능을 포함한 사용자 인증 시스템을 구현합니다.
+FootOff는 모임을 만들고 참여할 수 있는 플랫폼으로, 다양한 모임 관리 기능을 제공합니다.
 
 ## 기술 스택
 - Java 21
@@ -72,13 +73,19 @@ src/main/java/footoff/api/
 
 ### 사용자 관리
 - 사용자 정보 조회
-- 사용자 프로필 관리
+- 사용자 프로필 관리 (닉네임, 나이, 성별, 자기소개, MBTI 등)
 - 소셜 계정 연동 관리
+- 사용자 관심사 관리
 
 ### 모임 관리
-- 모임 생성 및 조회
-- 모임 참가 신청 및 승인/거절
-- 모임 위치 정보 관리
+- 모임 생성, 조회, 수정, 삭제
+- 모임 상세 정보 조회
+- 예정된 모임 목록 조회
+
+### 모임 참가
+- 모임 참가 신청
+- 모임 참가 신청 승인/거부
+- 모임 참가 취소
 
 ## 코드 문서화
 - 모든 클래스와 메서드에 상세한 주석 제공
@@ -127,16 +134,26 @@ src/main/java/footoff/api/
 - `GET /user/test`: 테스트 엔드포인트
 
 ### 모임 API
-- `POST /gathering`: 모임 생성
-- `GET /gathering/{id}`: 특정 모임 조회
-- `GET /gathering`: 모든 모임 조회
-- `POST /gathering/{id}/join`: 모임 참가 신청
-- `PUT /gathering/{id}/approve/{userId}`: 참가 신청 승인
-- `PUT /gathering/{id}/reject/{userId}`: 참가 신청 거절
+- `POST /api/gatherings`: 모임 생성
+- `PUT /api/gatherings/{id}`: 모임 정보 업데이트
+- `GET /api/gatherings/{id}`: 특정 모임 조회
+- `GET /api/gatherings/{id}/detail`: 모임 상세 정보 조회
+- `GET /api/gatherings`: 모든 모임 조회
+- `GET /api/gatherings/upcoming`: 예정된 모임 조회
+- `GET /api/gatherings/user/{userId}`: 사용자가 참가한 모임 조회
+- `GET /api/gatherings/organizer/{organizerId}`: 주최자가 생성한 모임 조회
+- `GET /api/gatherings/{gatheringId}/users`: 모임 참가자 목록 조회
+- `POST /api/gatherings/{gatheringId}/join`: 모임 참가 신청
+- `POST /api/gatherings/{gatheringId}/approve/{userId}`: 모임 참가 신청 승인
+- `POST /api/gatherings/{gatheringId}/reject/{userId}`: 모임 참가 신청 거부
+- `DELETE /api/gatherings/{gatheringId}/cancel`: 모임 참가 취소
+- `DELETE /api/gatherings/{gatheringId}/leave`: 모임 탈퇴
+- `DELETE /api/gatherings/{id}`: 모임 삭제
 
 ## 데이터베이스 스키마
 - **User**: 사용자 기본 정보 (UUID 기반 ID, 이메일, 전화번호, 상태 등)
 - **UserProfile**: 사용자 프로필 정보 (닉네임, 나이, 성별, 소개 등)
+- **UserInterest**: 사용자 관심사 정보 (프로필 ID, 관심사명)
 - **UserSocialAccount**: 소셜 계정 정보 (사용자 ID, 소셜 제공자, 소셜 ID)
 - **Gathering**: 모임 정보 (제목, 설명, 일정, 최소/최대 인원 등)
 - **GatheringUser**: 모임 참가자 정보 (모임 ID, 사용자 ID, 상태, 역할)
@@ -157,6 +174,12 @@ JUnit 5와 Mockito를 사용한 단위 테스트 및 통합 테스트 지원:
 Spring Security를 사용한 인증 및 권한 관리:
 - 특정 경로(/auth/**)를 제외한 모든 요청에 인증 필요
 - JWT 토큰 기반 인증
+
+## 개발 참고사항
+1. 모델 클래스를 생성할 때는 BaseEntity를 상속하여 생성/수정 시간을 자동으로 관리할 수 있습니다.
+2. DTO 클래스 간에 중복되는 코드는 통합하여 관리합니다. (예: GatheringRequestDto)
+3. 엔티티 클래스에서는 연관 관계와 필드 이름에 주의해야 합니다.
+4. 테이블 이름은 소문자 스네이크 케이스를 사용합니다.
 
 ## 라이센스
 이 프로젝트는 MIT 라이센스에 따라 배포됩니다. 

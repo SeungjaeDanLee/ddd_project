@@ -3,8 +3,8 @@ package footoff.api.domain.user.service;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,16 +37,12 @@ public class UserServiceImplTest {
                 .id(UUID.randomUUID())
                 .name("사용자1")
                 .age(25)
-                .createDate(new Date())
-                .updateDate(new Date())
                 .build();
         
         User user2 = User.builder()
                 .id(UUID.randomUUID())
                 .name("사용자2")
                 .age(30)
-                .createDate(new Date())
-                .updateDate(new Date())
                 .build();
         
         List<User> expectedUsers = Arrays.asList(user1, user2);

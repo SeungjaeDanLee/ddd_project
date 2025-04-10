@@ -2,9 +2,11 @@ package footoff.api.domain.gathering.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,15 +15,61 @@ import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.user.entity.User;
 
 @Repository
-public interface GatheringRepository extends JpaRepository<Gathering, Long> {
+public interface GatheringRepository extends JpaRepository<Gathering, Long>, JpaSpecificationExecutor<Gathering> {
     
+    /**
+     * 특정 날짜 이후의 모임 목록 조회
+     */
+    List<Gathering> findByGatheringDateAfter(LocalDateTime date);
+    
+    /**
+     * 특정 범위의 날짜 사이의 모임 목록 조회
+     */
+    List<Gathering> findByGatheringDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+    
+    /**
+     * 특정 사용자가 주최한 모임 목록 조회
+     */
     List<Gathering> findByOrganizer(User organizer);
     
-    List<Gathering> findByGatheringDateAfter(LocalDateTime dateTime);
+    /**
+     * 제목에 특정 키워드가 포함된 모임 목록 조회
+     */
+    List<Gathering> findByTitleContaining(String keyword);
     
-    @Query("SELECT g FROM Gathering g WHERE g.gatheringDate > :now ORDER BY g.gatheringDate ASC")
-    List<Gathering> findUpcomingGatherings(@Param("now") LocalDateTime now);
+    /**
+     * 제목 또는 설명에 특정 키워드가 포함된 모임 목록 조회 (페이징 적용)
+     */
+    @Query("SELECT g FROM Gathering g WHERE LOWER(g.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(g.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Gathering> findByTitleOrDescriptionContaining(@Param("keyword") String keyword, Pageable pageable);
     
-    @Query("SELECT g FROM Gathering g JOIN g.users gu WHERE gu.user.id = :userId")
-    List<Gathering> findGatheringsByUserId(@Param("userId") UUID userId);
+    /**
+     * 특정 위치 반경 내의 모임 목록 조회 (페이징 적용)
+     * 
+     * Haversine 공식을 사용하여 거리 계산
+     * 6371 = 지구 반지름 (km)
+     */
+    @Query("SELECT g FROM Gathering g JOIN g.location l WHERE " +
+           "(6371 * acos(cos(radians(:latitude)) * cos(radians(l.latitude)) * " +
+           "cos(radians(l.longitude) - radians(:longitude)) + " +
+           "sin(radians(:latitude)) * sin(radians(l.latitude)))) <= :radius")
+    Page<Gathering> findByLocationWithinRadius(
+            @Param("latitude") Double latitude,
+            @Param("longitude") Double longitude,
+            @Param("radius") Double radiusInKm,
+            Pageable pageable);
+    
+    /**
+     * 특정 사용자가 참가하지 않은 모임 목록 조회 (페이징 적용)
+     */
+    @Query("SELECT g FROM Gathering g WHERE g.id NOT IN " +
+           "(SELECT gu.gathering.id FROM GatheringUser gu WHERE gu.user.id = :userId)")
+    Page<Gathering> findByUserNotJoined(@Param("userId") String userId, Pageable pageable);
+    
+    /**
+     * 참가 가능한(최대 인원에 도달하지 않은) 모임 목록 조회 (페이징 적용)
+     */
+    @Query("SELECT g FROM Gathering g WHERE " +
+           "(SELECT COUNT(gu) FROM GatheringUser gu WHERE gu.gathering = g AND gu.status = 'APPROVED') < g.maxUsers")
+    Page<Gathering> findAvailableGatherings(Pageable pageable);
 } 

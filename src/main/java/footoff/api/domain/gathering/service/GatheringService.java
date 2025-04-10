@@ -3,8 +3,9 @@ package footoff.api.domain.gathering.service;
 import java.util.List;
 import java.util.UUID;
 
-import footoff.api.domain.gathering.dto.GatheringCreateRequestDto;
+import footoff.api.domain.gathering.dto.GatheringDetailResponseDto;
 import footoff.api.domain.gathering.dto.GatheringDto;
+import footoff.api.domain.gathering.dto.GatheringRequestDto;
 import footoff.api.domain.gathering.dto.GatheringUserDto;
 
 /**
@@ -20,7 +21,7 @@ public interface GatheringService {
      * @return 생성된 모임 정보
      * @throws EntityNotFoundException 주최자 ID에 해당하는 사용자를 찾을 수 없는 경우
      */
-    GatheringDto createGathering(GatheringCreateRequestDto requestDto, UUID organizerId);
+    GatheringDto createGathering(GatheringRequestDto requestDto, UUID organizerId);
     
     /**
      * ID로 모임을 조회하는 메소드
@@ -30,6 +31,38 @@ public interface GatheringService {
      * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
      */
     GatheringDto getGathering(Long id);
+    
+    /**
+     * ID로 모임의 상세 정보를 조회하는 메소드
+     * 
+     * @param id 모임 ID
+     * @param userId 현재 사용자 ID (선택적)
+     * @return 조회된 모임 상세 정보
+     * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
+     */
+    GatheringDetailResponseDto getGatheringDetail(Long id, UUID userId);
+    
+    /**
+     * 모임 정보를 업데이트하는 메소드
+     * 
+     * @param id 모임 ID
+     * @param requestDto 모임 업데이트 요청 데이터
+     * @param userId 요청한 사용자 ID
+     * @return 업데이트된 모임 정보
+     * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
+     * @throws InvalidOperationException 권한이 없거나 업데이트가 불가능한 상태인 경우
+     */
+    GatheringDto updateGathering(Long id, GatheringRequestDto requestDto, UUID userId);
+    
+    /**
+     * 모임을 삭제하는 메소드
+     * 
+     * @param id 모임 ID
+     * @param userId 요청한 사용자 ID
+     * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
+     * @throws InvalidOperationException 권한이 없거나 삭제가 불가능한 상태인 경우
+     */
+    void deleteGathering(Long id, UUID userId);
     
     /**
      * 모든 모임을 조회하는 메소드
@@ -93,6 +126,26 @@ public interface GatheringService {
      * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      */
     GatheringUserDto rejectMembership(Long gatheringId, UUID userId);
+    
+    /**
+     * 모임 참가를 취소하는 메소드 (참가 신청 전 상태)
+     * 
+     * @param gatheringId 모임 ID
+     * @param userId 사용자 ID
+     * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
+     * @throws IllegalStateException 참가 신청 상태가 아닌 경우
+     */
+    void cancelMembership(Long gatheringId, UUID userId);
+    
+    /**
+     * 모임에서 나가는 메소드 (참가 승인 이후 상태)
+     * 
+     * @param gatheringId 모임 ID
+     * @param userId 사용자 ID
+     * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
+     * @throws IllegalStateException 참가 승인된 상태가 아닌 경우
+     */
+    void leaveGathering(Long gatheringId, UUID userId);
     
     /**
      * 모임의 user 목록을 조회하는 메소드

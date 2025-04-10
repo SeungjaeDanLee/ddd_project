@@ -18,6 +18,11 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 
+	/**
+	 * 모든 사용자 목록을 조회하는 메서드
+	 * 
+	 * @return 전체 사용자 목록
+	 */
 	@Override
 	public List<User> getUsers() {
 		return userRepository.findAll();

@@ -1,7 +1,7 @@
 package footoff.api.domain.gathering.service;
 
-import footoff.api.domain.gathering.dto.GatheringCreateRequestDto;
 import footoff.api.domain.gathering.dto.GatheringDto;
+import footoff.api.domain.gathering.dto.GatheringRequestDto;
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringLocation;
 import footoff.api.domain.gathering.entity.GatheringUser;
@@ -44,7 +44,7 @@ public class GatheringServiceImplTest {
     private User testUser;
     private Gathering testGathering;
     private GatheringLocation testLocation;
-    private GatheringCreateRequestDto createRequestDto;
+    private GatheringRequestDto requestDto;
     private UUID testUserId;
 
     @BeforeEach
@@ -82,24 +82,24 @@ public class GatheringServiceImplTest {
                 .placeName("테스트 장소")
                 .build();
 
-        createRequestDto = new GatheringCreateRequestDto();
+        requestDto = new GatheringRequestDto();
         // 리플렉션으로 private 필드 설정 - 실제 구현시 setter 추가 필요
         try {
-            java.lang.reflect.Field titleField = createRequestDto.getClass().getDeclaredField("title");
+            java.lang.reflect.Field titleField = requestDto.getClass().getDeclaredField("title");
             titleField.setAccessible(true);
-            titleField.set(createRequestDto, "테스트 모임");
+            titleField.set(requestDto, "테스트 모임");
 
-            java.lang.reflect.Field descField = createRequestDto.getClass().getDeclaredField("description");
+            java.lang.reflect.Field descField = requestDto.getClass().getDeclaredField("description");
             descField.setAccessible(true);
-            descField.set(createRequestDto, "테스트 모임 설명");
+            descField.set(requestDto, "테스트 모임 설명");
 
-            java.lang.reflect.Field addressField = createRequestDto.getClass().getDeclaredField("address");
+            java.lang.reflect.Field addressField = requestDto.getClass().getDeclaredField("address");
             addressField.setAccessible(true);
-            addressField.set(createRequestDto, "서울시 강남구");
+            addressField.set(requestDto, "서울시 강남구");
 
-            java.lang.reflect.Field dateField = createRequestDto.getClass().getDeclaredField("gatheringDate");
+            java.lang.reflect.Field dateField = requestDto.getClass().getDeclaredField("gatheringDate");
             dateField.setAccessible(true);
-            dateField.set(createRequestDto, LocalDateTime.now().plusDays(14));
+            dateField.set(requestDto, LocalDateTime.now().plusDays(14));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -120,7 +120,7 @@ public class GatheringServiceImplTest {
         );
 
         // When
-        GatheringDto result = gatheringService.createGathering(createRequestDto, testUserId);
+        GatheringDto result = gatheringService.createGathering(requestDto, testUserId);
 
         // Then
         assertNotNull(result);
@@ -140,7 +140,7 @@ public class GatheringServiceImplTest {
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> {
-            gatheringService.createGathering(createRequestDto, testUserId);
+            gatheringService.createGathering(requestDto, testUserId);
         });
 
         verify(systemUserRepository, times(1)).findById(testUserId);

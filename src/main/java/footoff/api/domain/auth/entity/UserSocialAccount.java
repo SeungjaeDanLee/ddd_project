@@ -17,7 +17,7 @@ import lombok.AccessLevel;
  * 한 명의 User는 여러 소셜 계정을 가질 수 있습니다(1:N 관계).
  */
 @Entity
-@Table(name = "UserSocialAccount")
+@Table(name = "user_social_account")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserSocialAccount extends BaseEntity {

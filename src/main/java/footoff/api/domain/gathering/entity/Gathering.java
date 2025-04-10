@@ -12,8 +12,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 모임 정보를 담는 엔티티 클래스
+ */
 @Entity
-@Table(name = "Gathering")
+@Table(name = "gathering")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Gathering extends BaseEntity {
@@ -31,7 +34,7 @@ public class Gathering extends BaseEntity {
     @Column(name = "gathering_date", nullable = false)
     private LocalDateTime gatheringDate;
     
-    @Column(name = "mim_users", nullable = false)
+    @Column(name = "min_users", nullable = false)
     private Integer minUsers;
     
     @Column(name = "max_users", nullable = false)

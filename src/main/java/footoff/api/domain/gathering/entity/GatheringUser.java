@@ -10,8 +10,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 모임 참가자 정보를 담는 엔티티 클래스
+ * 사용자의 모임 참가 상태와 역할을 관리한다
+ */
 @Entity
-@Table(name = "GatheringUser",
+@Table(name = "gathering_user",
        uniqueConstraints = @UniqueConstraint(columnNames = {"gathering_id", "user_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

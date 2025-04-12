@@ -16,6 +16,8 @@ import org.mockito.MockitoAnnotations;
 
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
+import footoff.api.global.common.enums.Language;
+import footoff.api.global.common.enums.UserActivityStatus;
 
 public class UserServiceImplTest {
 
@@ -35,19 +37,22 @@ public class UserServiceImplTest {
         // Given
         User user1 = User.builder()
                 .id(UUID.randomUUID())
-                .name("사용자1")
-                .age(25)
+                .email("user1@example.com")
+                .phoneNumber("010-1234-5678")
+                .status(UserActivityStatus.ACTIVE)
+                .language(Language.KO)
+                .isVerified(false)
+                .lastLoginAt(LocalDateTime.now())
                 .build();
         
         User user2 = User.builder()
                 .id(UUID.randomUUID())
-                .name("사용자2")
-                .age(30)
+                .email("user2@example.com")
+                .lastLoginAt(LocalDateTime.now())
                 .build();
         
         List<User> expectedUsers = Arrays.asList(user1, user2);
         
-        when(userRepository.findAll()).thenReturn(expectedUsers);
         
         // When
         List<User> actualUsers = userService.getUsers();

@@ -17,11 +17,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/auth")
 public class AuthController {
 
-	private final AuthService authService;
+    private final AuthService authService;
 
-	@GetMapping("/login/kakao")
-	public BaseResponse<KaKaoLoginResponseDTO> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
-		KaKaoLoginResponseDTO result = authService.kakaoLogin(accessCode, httpServletResponse);
-		return BaseResponse.onSuccess(result);
-	}
+    @GetMapping("/login/kakao")
+    public BaseResponse<KaKaoLoginResponseDTO> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
+        KaKaoLoginResponseDTO result = authService.kakaoLogin(accessCode, httpServletResponse);
+        return BaseResponse.onSuccess(result);
+    }
 }

@@ -3,8 +3,8 @@ package footoff.api.domain.gathering.dto;
 import java.time.LocalDateTime;
 
 import footoff.api.domain.gathering.entity.GatheringUser;
-import footoff.api.global.common.enums.UserStatus;
-import footoff.api.global.common.enums.UserRole;
+import footoff.api.global.common.enums.GatheringUserStatus;
+import footoff.api.global.common.enums.GatheringUserRole;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,22 +14,22 @@ public class GatheringUserDto {
     private final Long gatheringId;
     private final String gatheringTitle;
     private final String userId;
-    private final String userName;
-    private final UserStatus status;
-    private final UserRole role;
+    private final String userEmail;
+    private final GatheringUserStatus status;
+    private final GatheringUserRole role;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     
     @Builder
     public GatheringUserDto(Long id, Long gatheringId, String gatheringTitle,
-                            String userId, String userName,
-                            UserStatus status, UserRole role,
+                            String userId, String userEmail,
+                            GatheringUserStatus status, GatheringUserRole role,
                             LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.gatheringId = gatheringId;
         this.gatheringTitle = gatheringTitle;
         this.userId = userId;
-        this.userName = userName;
+        this.userEmail = userEmail;
         this.status = status;
         this.role = role;
         this.createdAt = createdAt;
@@ -42,7 +42,7 @@ public class GatheringUserDto {
                 .gatheringId(gatheringUser.getGathering().getId())
                 .gatheringTitle(gatheringUser.getGathering().getTitle())
                 .userId(gatheringUser.getUser().getId().toString())
-                .userName(gatheringUser.getUser().getName())
+                .userEmail(gatheringUser.getUser().getEmail())
                 .status(gatheringUser.getStatus())
                 .role(gatheringUser.getRole())
                 .createdAt(gatheringUser.getCreatedAt())

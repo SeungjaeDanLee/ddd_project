@@ -5,22 +5,23 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import footoff.api.domain.gathering.dto.*;
+import footoff.api.domain.gathering.entity.GatheringLocation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import footoff.api.domain.gathering.dto.GatheringCreateRequestDto;
-import footoff.api.domain.gathering.dto.GatheringDto;
-import footoff.api.domain.gathering.dto.GatheringUserDto;
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringUser;
 import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.gathering.repository.GatheringRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
-import footoff.api.global.common.enums.UserStatus;
-import footoff.api.global.common.enums.UserRole;
+import footoff.api.global.common.enums.GatheringUserStatus;
+import footoff.api.global.common.enums.GatheringUserRole;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import footoff.api.global.exception.InvalidOperationException;
+import footoff.api.global.validator.GatheringValidator;
 
 /**
  * 모임 관련 서비스 구현체
@@ -30,8 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class GatheringServiceImpl implements GatheringService {
 
     private final GatheringRepository gatheringRepository;
-    private final GatheringUserRepository userRepository;
-    private final UserRepository systemUserRepository;
+    private final GatheringUserRepository gatheringUserRepository;
+    private final UserRepository userRepository;
 
     /**
      * 새로운 모임을 생성하는 메소드
@@ -43,31 +44,44 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringDto createGathering(GatheringCreateRequestDto requestDto, UUID organizerId) {
-        User organizer = systemUserRepository.findById(organizerId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        
+    public GatheringDto createGathering(GatheringRequestDto requestDto, UUID organizerId) {
+        User organizer = userRepository.findById(organizerId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
+
         Gathering gathering = Gathering.builder()
                 .title(requestDto.getTitle())
                 .description(requestDto.getDescription())
-                .address(requestDto.getAddress())
-                .applicationDeadline(requestDto.getApplicationDeadline())
                 .gatheringDate(requestDto.getGatheringDate())
+                .minUsers(requestDto.getMinUsers())
+                .maxUsers(requestDto.getMaxUsers())
+                .fee(requestDto.getFee())
                 .organizer(organizer)
                 .build();
-        
+
         Gathering savedGathering = gatheringRepository.save(gathering);
-        
-        // 모임 생성자를 주최자로 등록
-        GatheringUser organizerUser = GatheringUser.builder()
+
+        if (requestDto.getLocation() != null) {
+            GatheringLocation location = GatheringLocation.builder()
+                    .gathering(savedGathering)
+                    .latitude(requestDto.getLocation().getLatitude())
+                    .longitude(requestDto.getLocation().getLongitude())
+                    .address(requestDto.getLocation().getAddress())
+                    .placeName(requestDto.getLocation().getPlaceName())
+                    .build();
+
+            savedGathering.setLocation(location);
+        }
+
+        // 주최자를 모임 참가자로 자동 추가
+        GatheringUser gatheringUser = GatheringUser.builder()
                 .gathering(savedGathering)
                 .user(organizer)
-                .status(UserStatus.APPROVED)
-                .role(UserRole.ORGANIZER)
+                .status(GatheringUserStatus.APPROVED)
+                .role(GatheringUserRole.ORGANIZER)
                 .build();
-        
-        userRepository.save(organizerUser);
-        
+
+        savedGathering.addUser(gatheringUser);
+
         return GatheringDto.fromEntity(savedGathering);
     }
 
@@ -82,7 +96,7 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional(readOnly = true)
     public GatheringDto getGathering(Long id) {
         Gathering gathering = gatheringRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
         return GatheringDto.fromEntity(gathering);
     }
 
@@ -107,7 +121,8 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getUpcomingGatherings() {
-        return gatheringRepository.findByGatheringDateAfter(LocalDateTime.now()).stream()
+        LocalDateTime now = LocalDateTime.now();
+        return gatheringRepository.findByGatheringDateAfter(now).stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -122,11 +137,12 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getUserGatherings(UUID userId) {
-        User user = systemUserRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         
-        return userRepository.findByUser(user).stream()
-                .map(gatheringUser -> GatheringDto.fromEntity(gatheringUser.getGathering()))
+        return gatheringUserRepository.findByUser(user).stream()
+                .map(GatheringUser::getGathering)
+                .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -140,8 +156,8 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getOrganizerGatherings(UUID organizerId) {
-        User organizer = systemUserRepository.findById(organizerId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+        User organizer = userRepository.findById(organizerId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
         
         return gatheringRepository.findByOrganizer(organizer).stream()
                 .map(GatheringDto::fromEntity)
@@ -161,31 +177,30 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional
     public GatheringUserDto joinGathering(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
-                .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
-        
-        User user = systemUserRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        
-        // 이미 참가 신청한 경우 체크
-        if (userRepository.existsByGatheringIdAndUserId(gatheringId, userId)) {
-            throw new IllegalStateException("이미 참가 신청한 모임입니다.");
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        // 이미 참가 신청한 경우 예외 발생
+        if (gatheringUserRepository.findByGatheringAndUser(gathering, user).isPresent()) {
+            throw new InvalidOperationException("이미 참가 신청한 모임입니다.");
         }
-        
-        // 모임 신청 마감 체크
-        if (gathering.isApplicationClosed()) {
-            throw new IllegalStateException("모임 신청이 마감되었습니다.");
-        }
-        
+
+        // 모임 참가 유효성 검증
+        GatheringValidator.validateJoinGathering(gathering);
+
         GatheringUser gatheringUser = GatheringUser.builder()
                 .gathering(gathering)
                 .user(user)
-                .status(UserStatus.PENDING)
-                .role(UserRole.MEMBER)
+                .status(GatheringUserStatus.PENDING)
+                .role(GatheringUserRole.PARTICIPANT)
                 .build();
-        
-        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
-        
-        return GatheringUserDto.fromEntity(savedGatheringUser);
+
+        gathering.addUser(gatheringUser);
+        gatheringUserRepository.save(gatheringUser);
+
+        return GatheringUserDto.fromEntity(gatheringUser);
     }
 
     /**
@@ -200,18 +215,19 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional
     public GatheringUserDto approveMembership(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
-                .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
-        
-        User user = systemUserRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        
-        GatheringUser gatheringUser = userRepository.findByGatheringAndUser(gathering, user)
-                .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
-        
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
+                .orElseThrow(() -> new EntityNotFoundException("Membership application not found"));
+
+        // 참가 승인 유효성 검증
+        GatheringValidator.validateApproveMembership(gathering, gatheringUser);
+
         gatheringUser.approve();
-        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
-        
-        return GatheringUserDto.fromEntity(savedGatheringUser);
+        return GatheringUserDto.fromEntity(gatheringUser);
     }
 
     /**
@@ -226,18 +242,19 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional
     public GatheringUserDto rejectMembership(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
-                .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
-        
-        User user = systemUserRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        
-        GatheringUser gatheringUser = userRepository.findByGatheringAndUser(gathering, user)
-                .orElseThrow(() -> new EntityNotFoundException("참가 신청을 찾을 수 없습니다."));
-        
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
+                .orElseThrow(() -> new EntityNotFoundException("Membership application not found"));
+
+        // 참가 거부 유효성 검증
+        GatheringValidator.validateRejectMembership(gatheringUser);
+
         gatheringUser.reject();
-        GatheringUser savedGatheringUser = userRepository.save(gatheringUser);
-        
-        return GatheringUserDto.fromEntity(savedGatheringUser);
+        return GatheringUserDto.fromEntity(gatheringUser);
     }
 
     /**
@@ -251,10 +268,135 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional(readOnly = true)
     public List<GatheringUserDto> getGatheringUsers(Long gatheringId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
-                .orElseThrow(() -> new EntityNotFoundException("모임을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
         
-        return userRepository.findByGathering(gathering).stream()
+        return gathering.getUsers().stream()
                 .map(GatheringUserDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GatheringDetailResponseDto getGatheringDetail(Long id, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
+
+        String currentUserId = userId != null ? userId.toString() : null;
+        
+        return GatheringDetailResponseDto.fromEntity(gathering, currentUserId);
+    }
+
+    @Override
+    @Transactional
+    public void cancelMembership(Long gatheringId, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
+                .orElseThrow(() -> new EntityNotFoundException("모임 참가 신청 내역이 없습니다."));
+
+        // 참가 취소 유효성 검증
+        GatheringValidator.validateCancelMembership(gathering, gatheringUser);
+
+        gathering.removeUser(gatheringUser);
+        gatheringUserRepository.delete(gatheringUser);
+    }
+    
+    @Override
+    @Transactional
+    public void leaveGathering(Long gatheringId, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
+                .orElseThrow(() -> new EntityNotFoundException("모임 참가 내역이 없습니다."));
+
+        // 모임 탈퇴 유효성 검증
+        GatheringValidator.validateLeaveGathering(gathering, gatheringUser);
+
+        gathering.removeUser(gatheringUser);
+        gatheringUserRepository.delete(gatheringUser);
+    }
+
+    /**
+     * 모임 정보를 업데이트하는 메소드
+     * 
+     * @param id 모임 ID
+     * @param requestDto 모임 업데이트 요청 데이터
+     * @param userId 요청한 사용자 ID
+     * @return 업데이트된 모임 정보
+     * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
+     * @throws InvalidOperationException 권한이 없거나 업데이트가 불가능한 상태인 경우
+     */
+    @Override
+    @Transactional
+    public GatheringDto updateGathering(Long id, GatheringRequestDto requestDto, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
+        
+        // 요청자가 주최자인지 확인
+        if (!gathering.getOrganizer().getId().equals(userId)) {
+            throw new InvalidOperationException("Only the organizer can update the gathering");
+        }
+        
+        // 모임 정보 업데이트
+        gathering.updateGathering(
+                requestDto.getTitle(),
+                requestDto.getDescription(),
+                requestDto.getGatheringDate(),
+                requestDto.getMinUsers(),
+                requestDto.getMaxUsers(),
+                requestDto.getFee()
+        );
+        
+        // 장소 정보 업데이트
+        if (requestDto.getLocation() != null) {
+            GatheringLocationDto locationDto = requestDto.getLocation();
+            
+            if (gathering.getLocation() != null) {
+                // 기존 장소 정보가 있으면 업데이트
+                gathering.getLocation().updateLocation(
+                        locationDto.getLatitude(),
+                        locationDto.getLongitude(),
+                        locationDto.getAddress(),
+                        locationDto.getPlaceName()
+                );
+            } else {
+                // 기존 장소 정보가 없으면 새로 생성
+                GatheringLocation location = GatheringLocation.builder()
+                        .gathering(gathering)
+                        .latitude(locationDto.getLatitude())
+                        .longitude(locationDto.getLongitude())
+                        .address(locationDto.getAddress())
+                        .placeName(locationDto.getPlaceName())
+                        .build();
+                
+                gathering.setLocation(location);
+            }
+        }
+        
+        return GatheringDto.fromEntity(gathering);
+    }
+    
+    @Override
+    @Transactional
+    public void deleteGathering(Long id, UUID userId) {
+        Gathering gathering = gatheringRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
+                
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+                
+        // 모임 삭제 유효성 검증
+        GatheringValidator.validateDeleteGathering(gathering, user);
+        
+        // 모임 삭제 (연관된 참가자, 위치 정보도 함께 삭제됨)
+        gatheringRepository.delete(gathering);
     }
 } 

@@ -4,7 +4,7 @@ CREATE TABLE gathering (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     address VARCHAR(255) NOT NULL,
-    application_deadline DATETIME,
+--     application_deadline DATETIME,
     gathering_date DATETIME NOT NULL,
     organizer_id BINARY(16) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.util.LinkedMultiValueMap;
@@ -57,35 +59,65 @@ public class KakaoUtil {
 			oAuthToken = objectMapper.readValue(response.getBody(), KakaoDTO.OAuthToken.class);
 			log.info("oAuthToken : " + oAuthToken.getAccess_token());
 		} catch (JsonProcessingException e) {
+			log.error("Failed to parse Kakao token response: {}", response.getBody(), e);
 			throw new AuthHandler(ErrorStatus._PARSING_ERROR);
 		}
 		return oAuthToken;
 	}
 
 	public KakaoDTO.KakaoProfile requestProfile(KakaoDTO.OAuthToken oAuthToken){
-		RestTemplate restTemplate2 = new RestTemplate();
-		HttpHeaders headers2 = new HttpHeaders();
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
 
-		headers2.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-		headers2.add("Authorization","Bearer "+ oAuthToken.getAccess_token());
+		headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+		headers.add("Authorization","Bearer "+ oAuthToken.getAccess_token());
 
-		HttpEntity<MultiValueMap<String,String>> kakaoProfileRequest = new HttpEntity <>(headers2);
+		HttpEntity<MultiValueMap<String,String>> kakaoProfileRequest = new HttpEntity<>(headers);
 
-		ResponseEntity<String> response2 = restTemplate2.exchange(
+		ResponseEntity<String> response = restTemplate.exchange(
 				"https://kapi.kakao.com/v2/user/me",
 				HttpMethod.GET,
 				kakaoProfileRequest,
 				String.class);
 
 		ObjectMapper objectMapper = new ObjectMapper();
+		// Configure ObjectMapper to ignore unknown properties
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		KakaoDTO.KakaoProfile kakaoProfile = null;
 
 		try {
-			log.info("Kakao API Response: {}", response2.getBody());
-			kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoDTO.KakaoProfile.class);
+			String responseBody = response.getBody();
+			log.info("Kakao API Response: {}", responseBody);
+			
+			// First check the response structure
+			JsonNode rootNode = objectMapper.readTree(responseBody);
+			if (rootNode == null) {
+				log.error("Kakao API returned null or invalid JSON");
+				throw new AuthHandler(ErrorStatus._PARSING_ERROR);
+			}
+			
+			// Try to parse directly to our DTO
+			kakaoProfile = objectMapper.readValue(responseBody, KakaoDTO.KakaoProfile.class);
+			
+			// Log important info for debugging
+			if (kakaoProfile != null) {
+				log.info("Successfully parsed Kakao profile, id: {}", kakaoProfile.getId());
+				if (kakaoProfile.getKakao_account() != null) {
+					log.info("Kakao account exists in profile");
+				} else {
+					log.warn("No kakao_account field in the Kakao profile");
+				}
+			} else {
+				log.error("Failed to parse Kakao profile, but no exception was thrown");
+			}
 		} catch (JsonProcessingException e) {
-			log.info(Arrays.toString(e.getStackTrace()));
+			log.error("Error parsing Kakao profile: {}", e.getMessage());
+			log.error("Stack trace: {}", Arrays.toString(e.getStackTrace()));
+			throw new AuthHandler(ErrorStatus._PARSING_ERROR);
+		} catch (Exception e) {
+			log.error("Unexpected error when processing Kakao profile: {}", e.getMessage());
+			log.error("Stack trace: {}", Arrays.toString(e.getStackTrace()));
 			throw new AuthHandler(ErrorStatus._PARSING_ERROR);
 		}
 

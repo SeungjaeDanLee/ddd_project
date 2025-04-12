@@ -12,6 +12,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 모임 정보를 담는 엔티티 클래스
+ */
 @Entity
 @Table(name = "gathering")
 @Getter
@@ -19,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class Gathering extends BaseEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @Column(nullable = false)
@@ -28,21 +31,27 @@ public class Gathering extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false)
-    private String address;
-    
-    @Column(name = "application_deadline")
-    private LocalDateTime applicationDeadline;
-    
     @Column(name = "gathering_date", nullable = false)
     private LocalDateTime gatheringDate;
     
-    @ManyToOne
+    @Column(name = "min_users", nullable = false)
+    private Integer minUsers;
+    
+    @Column(name = "max_users", nullable = false)
+    private Integer maxUsers;
+    
+    @Column(nullable = false)
+    private Integer fee;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
     
     @OneToMany(mappedBy = "gathering", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<GatheringUser> users = new HashSet<>();
+    
+    @OneToOne(mappedBy = "gathering", cascade = CascadeType.ALL, orphanRemoval = true)
+    private GatheringLocation location;
     
     /**
      * Gathering 엔티티를 생성하는 빌더 메소드
@@ -50,21 +59,22 @@ public class Gathering extends BaseEntity {
      * @param id 모임 ID
      * @param title 모임 제목
      * @param description 모임 설명
-     * @param address 모임 주소
-     * @param applicationDeadline 신청 마감 시간
      * @param gatheringDate 모임 날짜
+     * @param minUsers 최소 참가자 수
+     * @param maxUsers 최대 참가자 수
+     * @param fee 참가비
      * @param organizer 모임 주최자
      */
     @Builder
-    public Gathering(Long id, String title, String description, String address, 
-                  LocalDateTime applicationDeadline, LocalDateTime gatheringDate, 
-                  User organizer) {
+    public Gathering(Long id, String title, String description, LocalDateTime gatheringDate, 
+                  Integer minUsers, Integer maxUsers, Integer fee, User organizer) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.address = address;
-        this.applicationDeadline = applicationDeadline;
         this.gatheringDate = gatheringDate;
+        this.minUsers = minUsers;
+        this.maxUsers = maxUsers;
+        this.fee = fee;
         this.organizer = organizer;
     }
     
@@ -73,26 +83,19 @@ public class Gathering extends BaseEntity {
      * 
      * @param title 새로운 모임 제목
      * @param description 새로운 모임 설명
-     * @param address 새로운 모임 주소
-     * @param applicationDeadline 새로운 신청 마감 시간
      * @param gatheringDate 새로운 모임 날짜
+     * @param minUsers 새로운 최소 참가자 수
+     * @param maxUsers 새로운 최대 참가자 수
+     * @param fee 새로운 참가비
      */
-    public void updateGathering(String title, String description, String address, 
-                            LocalDateTime applicationDeadline, LocalDateTime gatheringDate) {
+    public void updateGathering(String title, String description, LocalDateTime gatheringDate, 
+                            Integer minUsers, Integer maxUsers, Integer fee) {
         this.title = title;
         this.description = description;
-        this.address = address;
-        this.applicationDeadline = applicationDeadline;
         this.gatheringDate = gatheringDate;
-    }
-    
-    /**
-     * 모임 신청이 마감되었는지 확인하는 메소드
-     * 
-     * @return 현재 시간이 신청 마감 시간을 지났으면 true, 아니면 false
-     */
-    public boolean isApplicationClosed() {
-        return LocalDateTime.now().isAfter(this.applicationDeadline);
+        this.minUsers = minUsers;
+        this.maxUsers = maxUsers;
+        this.fee = fee;
     }
     
     /**
@@ -111,5 +114,14 @@ public class Gathering extends BaseEntity {
      */
     public void removeUser(GatheringUser gatheringUser) {
         this.users.remove(gatheringUser);
+    }
+    
+    /**
+     * 모임 장소를 설정하는 메소드
+     * 
+     * @param location 모임 장소
+     */
+    public void setLocation(GatheringLocation location) {
+        this.location = location;
     }
 } 

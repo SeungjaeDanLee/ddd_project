@@ -1,106 +1,119 @@
 -- 유저
-CREATE TABLE User (
-                      id BINARY(16) NOT NULL PRIMARY KEY,
-                      name VARCHAR(32) NULL,
-                      age INT NULL,
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE user (
+                      id BINARY(16) NOT NULL PRIMARY KEY COMMENT '사용자 고유 식별자 (UUID)',
+                      phone_number VARCHAR(20) COMMENT '사용자 전화번호',
+                      email VARCHAR(50) COMMENT '사용자 이메일 주소',
+                      status VARCHAR(20) DEFAULT 'ACTIVE' COMMENT '계정 상태 (ACTIVE, INACTIVE, BANNED 등)',
+                      language VARCHAR(10) DEFAULT 'KO' COMMENT '선호 언어 (기본값: 한국어)',
+                      is_verified boolean DEFAULT FALSE COMMENT '계정 인증 여부',
+                      last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '마지막 로그인 시간',
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '계정 생성 시간',
+                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '계정 정보 업데이트 시간'
 );
 
 -- 소셜 아이디
-CREATE TABLE UserSocialAccount (
-                                   id INT AUTO_INCREMENT PRIMARY KEY,
-                                   user_id BINARY(16) NOT NULL,
-                                   provider VARCHAR(20) NOT NULL, -- ENUM -> VARCHAR(20)
-                                   provider_id VARCHAR(255) NOT NULL UNIQUE,
-                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                   FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE user_social_account (
+                                   id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '소셜 계정 고유 식별자',
+                                   user_id BINARY(16) NOT NULL COMMENT '연결된 사용자 ID (User 테이블 참조)',
+                                   social_provider VARCHAR(20) NOT NULL COMMENT '소셜 로그인 제공자 (GOOGLE, KAKAO, NAVER 등)', -- ENUM -> VARCHAR(20)
+                                   social_provider_id VARCHAR(255) NOT NULL UNIQUE COMMENT '소셜 서비스에서 제공하는 사용자 ID',
+                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '소셜 계정 연결 시간',
+                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '소셜 계정 정보 업데이트 시간',
+                                   FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- 프로필
-CREATE TABLE UserProfile (
-                             id INT AUTO_INCREMENT PRIMARY KEY,
-                             user_id BINARY(16) NOT NULL UNIQUE,
-                             profile_image VARCHAR(255),
-                             mbti VARCHAR(10),
-                             job VARCHAR(100),
-                             introduction TEXT,
-                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                             FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE user_profile (
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '프로필 고유 식별자',
+                             user_id BINARY(16) NOT NULL UNIQUE COMMENT '사용자 ID (User 테이블 참조)',
+                             profile_image VARCHAR(255) COMMENT '프로필 이미지 URL',
+                             nickname VARCHAR(30) COMMENT '사용자 닉네임',
+                             age INT(3) COMMENT '사용자 나이',
+                             gender VARCHAR(10) COMMENT '사용자 성별',
+                             introduction TEXT COMMENT '자기소개',
+                             mbti VARCHAR(4) COMMENT '사용자 MBTI 유형',
+                             location VARCHAR(30) COMMENT '사용자 위치/지역',
+                             job VARCHAR(30) COMMENT '사용자 직업',
+                             hobby VARCHAR(30) COMMENT '사용자 취미',
+                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '프로필 생성 시간',
+                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '프로필 정보 업데이트 시간',
+                             FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- 유저 관심사
-CREATE TABLE UserInterest (
-                              id INT AUTO_INCREMENT PRIMARY KEY,
-                              user_id BINARY(16) NOT NULL,
-                              interest_name VARCHAR(100) NOT NULL,
-                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                              FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE user_interest (
+                              id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '관심사 고유 식별자',
+                              profile_id BIGINT NOT NULL COMMENT '연결된 프로필 ID (UserProfile 테이블 참조)',
+                              interest_name VARCHAR(100) NOT NULL COMMENT '관심사 이름',
+                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '관심사 등록 시간',
+                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '관심사 정보 업데이트 시간',
+                              FOREIGN KEY (profile_id) REFERENCES user_profile(id) ON DELETE CASCADE
 );
 
 -- 모임
-CREATE TABLE Gathering (
-                           id INT AUTO_INCREMENT PRIMARY KEY,
-                           title VARCHAR(255) NOT NULL,
-                           description TEXT,
-                           application_deadline DATETIME NOT NULL,
-                           gathering_date DATETIME NOT NULL,
-                           max_users INT NOT NULL,
-                           organizer_id BINARY(16) NOT NULL,
-                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                           FOREIGN KEY (organizer_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE gathering (
+                           id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '모임 고유 식별자',
+                           title VARCHAR(50) NOT NULL COMMENT '모임 제목',
+                           description TEXT COMMENT '모임 설명',
+#                            application_deadline DATETIME NOT NULL COMMENT '모임 신청 마감 일시',
+                           gathering_date DATETIME NOT NULL COMMENT '모임 진행 일시',
+                           min_users INT NOT NULL COMMENT '모임 최소 인원',
+                           max_users INT NOT NULL COMMENT '모임 최대 인원',
+                           fee INT NOT NULL COMMENT '모임 참가비',
+                           organizer_id BINARY(16) NOT NULL COMMENT '모임 주최자 ID (User 테이블 참조)',
+                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '모임 생성 시간',
+                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '모임 정보 업데이트 시간',
+                           FOREIGN KEY (organizer_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- 모임 참가자(신청, 승인, 거절)
-CREATE TABLE GatheringUser (
-                               id INT AUTO_INCREMENT PRIMARY KEY,
-                               gathering_id INT NOT NULL,
-                               user_id BINARY(16) NOT NULL,
-                               status VARCHAR(20) NOT NULL, -- ENUM -> VARCHAR(20)
-                               role VARCHAR(20) NOT NULL, -- ENUM -> VARCHAR(20)
-                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                               FOREIGN KEY (gathering_id) REFERENCES Gathering(id) ON DELETE CASCADE,
-                               FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE gathering_user (
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '모임 참가자 고유 식별자',
+                               gathering_id BIGINT NOT NULL COMMENT '모임 ID (Gathering 테이블 참조)',
+                               user_id BINARY(16) NOT NULL COMMENT '참가자 ID (User 테이블 참조)',
+                               status VARCHAR(20) NOT NULL COMMENT '참가 상태 (PENDING, APPROVED, REJECTED 등)', -- ENUM -> VARCHAR(20)
+                               role VARCHAR(20) NOT NULL COMMENT '참가자 역할 (PARTICIPANT, ORGANIZER 등)', -- ENUM -> VARCHAR(20)
+                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '참가 신청 시간',
+                               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '참가 상태 업데이트 시간',
+                               FOREIGN KEY (gathering_id) REFERENCES gathering(id) ON DELETE CASCADE,
+                               FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- 모임 장소
-CREATE TABLE GatheringLocation (
-                                   id INT AUTO_INCREMENT PRIMARY KEY,
-                                   gathering_id INT NOT NULL,
-                                   latitude DOUBLE,
-                                   longitude DOUBLE,
-                                   address VARCHAR(255),
-                                   place_name VARCHAR(255),
-                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                   FOREIGN KEY (gathering_id) REFERENCES Gathering(id) ON DELETE CASCADE
+CREATE TABLE gathering_location (
+                                   id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '모임 장소 고유 식별자',
+                                   gathering_id BIGINT NOT NULL COMMENT '모임 ID (Gathering 테이블 참조)',
+                                   latitude DOUBLE COMMENT '위도 좌표',
+                                   longitude DOUBLE COMMENT '경도 좌표',
+                                   address VARCHAR(255) COMMENT '상세 주소',
+                                   place_name VARCHAR(255) COMMENT '장소명',
+                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '장소 정보 등록 시간',
+                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '장소 정보 업데이트 시간',
+                                   FOREIGN KEY (gathering_id) REFERENCES gathering(id) ON DELETE CASCADE
 );
 
 -- 신고
-CREATE TABLE Report (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        reporter_id BINARY(16) NOT NULL,
-                        reported_id BINARY(16) NOT NULL,
-                        report_type VARCHAR(20) NOT NULL, -- ENUM -> VARCHAR(20)
-                        reason TEXT NOT NULL,
-                        status VARCHAR(20) DEFAULT 'PENDING', -- ENUM -> VARCHAR(20)
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        FOREIGN KEY (reporter_id) REFERENCES User(id) ON DELETE CASCADE,
-                        FOREIGN KEY (reported_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE report (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '신고 고유 식별자',
+                        reporter_id BINARY(16) NOT NULL COMMENT '신고자 ID (User 테이블 참조)',
+                        reported_id BINARY(16) NOT NULL COMMENT '피신고자 ID (User 테이블 참조)',
+                        report_type VARCHAR(20) NOT NULL COMMENT '신고 유형 (SPAM, HARASSMENT, INAPPROPRIATE 등)', -- ENUM -> VARCHAR(20)
+                        reason TEXT NOT NULL COMMENT '신고 사유',
+                        status VARCHAR(20) DEFAULT 'PENDING' COMMENT '신고 처리 상태 (PENDING, RESOLVED, REJECTED 등)', -- ENUM -> VARCHAR(20)
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '신고 접수 시간',
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '신고 상태 업데이트 시간',
+                        FOREIGN KEY (reporter_id) REFERENCES user(id) ON DELETE CASCADE,
+                        FOREIGN KEY (reported_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 -- 차단
-CREATE TABLE Block (
-                       id INT AUTO_INCREMENT PRIMARY KEY,
-                       user_id BINARY(16) NOT NULL,
-                       blocked_id BINARY(16) NOT NULL,
-                       reason TEXT,
-                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                       FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
-                       FOREIGN KEY (blocked_id) REFERENCES User(id) ON DELETE CASCADE
+CREATE TABLE block (
+                       id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '차단 고유 식별자',
+                       user_id BINARY(16) NOT NULL COMMENT '차단을 실행한 사용자 ID (User 테이블 참조)',
+                       blocked_id BINARY(16) NOT NULL COMMENT '차단된 사용자 ID (User 테이블 참조)',
+                       reason TEXT COMMENT '차단 사유',
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '차단 등록 시간',
+                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '차단 정보 업데이트 시간',
+                       FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+                       FOREIGN KEY (blocked_id) REFERENCES user(id) ON DELETE CASCADE
 );

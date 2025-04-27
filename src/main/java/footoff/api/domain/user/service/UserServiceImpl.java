@@ -47,19 +47,15 @@ public class UserServiceImpl implements UserService {
 			.location(userProfileDto.getLocation())
 			.job(userProfileDto.getJob())
 			.hobby(userProfileDto.getHobby())
-			// .interests(userProfileDto.getInterests().stream().map(interestName -> UserInterest.builder().interestName(interestName).build()).collect(Collectors.toSet()))
 			.build();
-		
-		// // interests가 존재하면 UserInterest 엔티티로 변환하여 저장
-		// if (userProfileDto.getInterests() != null && !userProfileDto.getInterests().isEmpty()) {
-		// 	userProfileDto.getInterests().forEach(interestName -> {
-		// 		UserInterest interest = UserInterest.builder()
-		// 			.profile(userProfile)
-		// 			.interestName(interestName)
-		// 			.build();
-		// 		userProfile.addInterest(interest);
-		// 	});
-		// }
+
+		for (String interestName : userProfileDto.getInterests()) {
+			UserInterest interest = UserInterest.builder()
+				.profile(userProfile)
+				.interestName(interestName)
+				.build();
+			userProfile.addInterest(interest);
+		}
 
 		userProfileRepository.save(userProfile);
 		

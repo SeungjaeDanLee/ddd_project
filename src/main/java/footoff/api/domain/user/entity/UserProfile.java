@@ -79,7 +79,7 @@ public class UserProfile extends BaseEntity {
     @Builder
     public UserProfile(Long id, User user, String profileImage, String nickname, 
                       Integer age, String gender, String introduction, String mbti, 
-                      String location, String job, String hobby, Set<UserInterest> interests) {
+                      String location, String job, String hobby) {
         this.id = id;
         this.user = user;
         this.profileImage = profileImage;
@@ -91,7 +91,6 @@ public class UserProfile extends BaseEntity {
         this.location = location;
         this.job = job;
         this.hobby = hobby;
-        // this.interests = interests;
     }
     
     /**

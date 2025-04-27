@@ -2,11 +2,11 @@ spring:
   config:
     import: secret.yml
   application:
-    name: api
+    name: foot-off-api
+    version: 1.0.0
   jpa:
     hibernate:
-#      개발하고 있을 때만 update 처리
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:

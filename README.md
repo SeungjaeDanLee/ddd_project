@@ -1,8 +1,8 @@
-# Footoff API Server
+# Squash API Server
 
 ## 프로젝트 소개
 이 프로젝트는 Spring Boot 기반의 백엔드 API 서버로, 카카오 OAuth 로그인 기능을 포함한 사용자 인증 시스템을 구현합니다.
-FootOff는 모임을 만들고 참여할 수 있는 플랫폼으로, 다양한 모임 관리 기능을 제공합니다.
+Squash는 모임을 만들고 참여할 수 있는 플랫폼으로, 다양한 모임 관리 기능을 제공합니다.
 
 ## 기술 스택
 - Java 21

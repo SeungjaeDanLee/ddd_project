@@ -71,6 +71,13 @@ public class GatheringUser extends BaseEntity {
     public void reject() {
         this.status = GatheringUserStatus.REJECTED;
     }
+
+    /**
+     * gathering 상태를 취소로 변경하는 메소드
+     */
+    public void cancel() {
+        this.status = GatheringUserStatus.CANCELLED;
+    }
     
     /**
      * gathering 역할을 변경하는 메소드

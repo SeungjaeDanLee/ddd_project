@@ -11,6 +11,27 @@ services:
     volumes:
       - mariadb-data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - app-network
+
+  server:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/talkwith
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    depends_on:
+      - database
+    networks:
+      - app-network
 
 volumes:
   mariadb-data:
+
+networks:
+  app-network:
+    driver: bridge

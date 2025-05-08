@@ -22,12 +22,9 @@ chmod +x ./gradlew
 cp -r ~/resources/* src/main/resources/
 
 # 기존 프로세스 종료
-pid=$(pgrep -f foot-off-1-backend.jar || echo "")
-if [ ! -z "$pid" ]; then
-    echo "Stopping existing application..."
-    kill -15 $pid
-    sleep 5
-fi
+echo "Stopping existing application..."
+kill $(pgrep -f backend-*.jar)
+sleep 3
 
 # 애플리케이션 빌드
 echo "Building application..."
@@ -35,6 +32,6 @@ echo "Building application..."
 
 # 애플리케이션 시작
 echo "Starting application..."
-nohup java -jar build/libs/foot-off-1-backend.jar > app.log 2>&1 &
+nohup java -jar build/libs/backend-*.jar > app.log 2>&1 &
 
 echo "Application started successfully" 

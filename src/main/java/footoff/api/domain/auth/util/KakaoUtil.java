@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import footoff.api.domain.auth.dto.KakaoDTO;
+import footoff.api.domain.auth.dto.KakaoDto;
 import footoff.api.domain.auth.exception.AuthHandler;
 import footoff.api.domain.auth.exception.ErrorStatus;
 
@@ -32,7 +32,7 @@ public class KakaoUtil {
 	@Value("${kakao.auth.redirect}")
 	private String redirect;
 
-	public KakaoDTO.OAuthToken requestToken(String accessCode) {
+	public KakaoDto.OAuthToken requestToken(String accessCode) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -53,10 +53,10 @@ public class KakaoUtil {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
-		KakaoDTO.OAuthToken oAuthToken = null;
+		KakaoDto.OAuthToken oAuthToken = null;
 
 		try {
-			oAuthToken = objectMapper.readValue(response.getBody(), KakaoDTO.OAuthToken.class);
+			oAuthToken = objectMapper.readValue(response.getBody(), KakaoDto.OAuthToken.class);
 			log.info("oAuthToken : " + oAuthToken.getAccess_token());
 		} catch (JsonProcessingException e) {
 			log.error("Failed to parse Kakao token response: {}", response.getBody(), e);
@@ -65,7 +65,7 @@ public class KakaoUtil {
 		return oAuthToken;
 	}
 
-	public KakaoDTO.KakaoProfile requestProfile(KakaoDTO.OAuthToken oAuthToken){
+	public KakaoDto.KakaoProfile requestProfile(KakaoDto.OAuthToken oAuthToken){
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 
@@ -84,7 +84,7 @@ public class KakaoUtil {
 		// Configure ObjectMapper to ignore unknown properties
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-		KakaoDTO.KakaoProfile kakaoProfile = null;
+		KakaoDto.KakaoProfile kakaoProfile = null;
 
 		try {
 			String responseBody = response.getBody();
@@ -98,7 +98,7 @@ public class KakaoUtil {
 			}
 			
 			// Try to parse directly to our DTO
-			kakaoProfile = objectMapper.readValue(responseBody, KakaoDTO.KakaoProfile.class);
+			kakaoProfile = objectMapper.readValue(responseBody, KakaoDto.KakaoProfile.class);
 			
 			// Log important info for debugging
 			if (kakaoProfile != null) {

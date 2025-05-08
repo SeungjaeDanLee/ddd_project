@@ -6,8 +6,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
-import footoff.api.domain.auth.dto.KakaoDTO;
+import footoff.api.domain.auth.dto.KaKaoLoginResponseDto;
+import footoff.api.domain.auth.dto.KakaoDto;
 import footoff.api.domain.auth.entity.UserSocialAccount;
 import footoff.api.domain.auth.repository.UserSocialAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
@@ -51,11 +51,11 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     @Transactional
-    public KaKaoLoginResponseDTO kakaoLogin(String accessCode, HttpServletResponse httpServletResponse) {
+    public KaKaoLoginResponseDto kakaoLogin(String accessCode, HttpServletResponse httpServletResponse) {
         // 카카오 OAuth 토큰 요청
-        KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
+        KakaoDto.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         // 토큰을 사용하여 카카오 프로필 정보 요청
-        KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
+        KakaoDto.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         
         // 카카오 프로필 유효성 검사
         if (kakaoProfile == null) {
@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
         httpServletResponse.setHeader("Authorization", token);
 
         // 로그인 응답 DTO 반환
-        return new KaKaoLoginResponseDTO(kakaoAccount.getUser().getId().toString(), 
+        return new KaKaoLoginResponseDto(kakaoAccount.getUser().getId().toString(),
                                         oAuthToken.getAccess_token(), 
                                         oAuthToken.getRefresh_token());
     }

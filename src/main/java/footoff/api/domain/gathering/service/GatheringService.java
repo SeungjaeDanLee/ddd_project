@@ -135,7 +135,7 @@ public interface GatheringService {
      * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      * @throws IllegalStateException 참가 신청 상태가 아닌 경우
      */
-    void cancelMembership(Long gatheringId, UUID userId);
+    void cancelGathering(Long gatheringId, UUID userId);
     
     /**
      * 모임에서 나가는 메소드 (참가 승인 이후 상태)

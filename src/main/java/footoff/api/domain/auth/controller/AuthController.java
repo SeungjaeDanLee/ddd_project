@@ -5,23 +5,50 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
+import footoff.api.domain.auth.dto.KaKaoLoginResponseDto;
 import footoff.api.domain.auth.service.AuthService;
 import footoff.api.global.common.BaseResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
-
+/**
+ * 인증 관련 HTTP 요청을 처리하는 컨트롤러
+ * 소셜 로그인 및 인증 관련 기능을 제공합니다.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Tag(name = "인증 API", description = "소셜 로그인 및 인증 관련 기능을 제공하는 API")
 public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * 카카오 로그인 처리 엔드포인트
+     * 카카오 로그인 후 리다이렉트되는 URL에서 사용됩니다.
+     *
+     * @param accessCode 카카오 인증 코드
+     * @param httpServletResponse HTTP 응답 객체
+     * @return 로그인 결과 정보
+     */
+    @Operation(summary = "카카오 로그인", description = "카카오 인증 코드를 이용하여 로그인을 처리합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "로그인 성공", 
+            content = @Content(schema = @Schema(implementation = KaKaoLoginResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "로그인 실패")
+    })
     @GetMapping("/login/kakao")
-    public BaseResponse<KaKaoLoginResponseDTO> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
-        KaKaoLoginResponseDTO result = authService.kakaoLogin(accessCode, httpServletResponse);
+    public BaseResponse<KaKaoLoginResponseDto> kakaoLogin(
+            @Parameter(description = "카카오 인증 코드", required = true) @RequestParam("code") String accessCode, 
+            HttpServletResponse httpServletResponse) {
+        KaKaoLoginResponseDto result = authService.kakaoLogin(accessCode, httpServletResponse);
         return BaseResponse.onSuccess(result);
     }
 }

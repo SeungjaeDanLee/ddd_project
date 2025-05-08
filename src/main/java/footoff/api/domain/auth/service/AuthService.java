@@ -1,6 +1,6 @@
 package footoff.api.domain.auth.service;
 
-import footoff.api.domain.auth.dto.KaKaoLoginResponseDTO;
+import footoff.api.domain.auth.dto.KaKaoLoginResponseDto;
 import footoff.api.domain.auth.entity.UserSocialAccount;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -20,7 +20,7 @@ public interface AuthService {
      * @param httpServletResponse HTTP 응답 객체 (JWT 토큰을 헤더에 추가하기 위해 사용)
      * @return 카카오 로그인 응답 DTO (사용자 ID와 카카오 토큰 정보 포함)
      */
-    KaKaoLoginResponseDTO kakaoLogin(String accessCode, HttpServletResponse httpServletResponse);
+    KaKaoLoginResponseDto kakaoLogin(String accessCode, HttpServletResponse httpServletResponse);
     
     /**
      * 카카오 계정 생성

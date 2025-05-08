@@ -1,5 +1,6 @@
 package footoff.api.domain.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,9 +11,15 @@ import lombok.Getter;
  * 사용자 ID와 카카오에서 발급받은 토큰 정보를 포함합니다.
  */
 @Getter
-public class KaKaoLoginResponseDTO {
+@Schema(description = "카카오 로그인 응답 정보")
+public class KaKaoLoginResponseDto {
+	@Schema(description = "시스템 내의 사용자 고유 ID (UUID)", example = "123e4567-e89b-12d3-a456-426614174000")
 	private String userId;      // 시스템 내의 사용자 고유 ID (UUID)
+	
+	@Schema(description = "카카오 API 호출에 사용할 수 있는 액세스 토큰", example = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	private String accessToken; // 카카오 API 호출에 사용할 수 있는 액세스 토큰
+	
+	@Schema(description = "액세스 토큰 갱신에 사용되는 리프레시 토큰", example = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
 	private String refreshToken; // 액세스 토큰 갱신에 사용되는 리프레시 토큰
 
 	/**
@@ -23,7 +30,7 @@ public class KaKaoLoginResponseDTO {
 	 * @param refreshToken 카카오 리프레시 토큰
 	 */
 	@Builder
-	public KaKaoLoginResponseDTO(String userId, String accessToken, String refreshToken) {
+	public KaKaoLoginResponseDto(String userId, String accessToken, String refreshToken) {
 		this.userId = userId;
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;

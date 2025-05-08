@@ -288,7 +288,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     @Override
     @Transactional
-    public void cancelMembership(Long gatheringId, UUID userId) {
+    public void cancelGathering(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
 

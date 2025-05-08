@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class UserRequestDTO {
+public class UserRequestDto {
 	@Getter
     @AllArgsConstructor
     public static class createUserProfile {

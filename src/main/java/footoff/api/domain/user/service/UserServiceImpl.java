@@ -48,6 +48,9 @@ public class UserServiceImpl implements UserService {
 			.location(userProfileDto.getLocation())
 			.job(userProfileDto.getJob())
 			.hobby(userProfileDto.getHobby())
+			.account(userProfileDto.getAccount())
+			.bank(userProfileDto.getBank())
+			.depositorName(userProfileDto.getDepositorName())
 			.build();
 
 		for (String interestName : userProfileDto.getInterests()) {

@@ -1,4 +1,4 @@
-package footoff.api.domain.user.service;
+package footoff.api.domain.user.repository;
 
 import java.util.Optional;
 import java.util.UUID;

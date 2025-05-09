@@ -12,6 +12,7 @@ import footoff.api.domain.user.dto.UserProfileDto;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.entity.UserProfile;
 import footoff.api.domain.user.entity.UserInterest;
+import footoff.api.domain.user.repository.UserProfileRepository;
 import footoff.api.domain.user.repository.UserRepository;
 import footoff.api.global.exception.EntityNotFoundException;
 
@@ -64,8 +65,9 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserProfileDto getUserProfile(UUID userId) {
-		UserProfile userProfile = userProfileRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("User profile not found"));
-		return userProfile.toDto();
+		return userProfileRepository.findByUserId(userId)
+			.map(UserProfile::toDto)
+			.orElse(null);
 	}
 
 	@Override

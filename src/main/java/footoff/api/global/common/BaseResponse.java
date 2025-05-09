@@ -4,12 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse<T> {
     // API 응답 성공 여부
     private boolean success;

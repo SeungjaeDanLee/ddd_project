@@ -24,8 +24,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @Schema(description = "사용자 프로필 정보")
 public class UserProfileDto {
-	@Schema(description = "프로필 고유 식별자")
-	private Long id;
+	// @Schema(description = "프로필 고유 식별자")
+	// private Long id;
 
 	@Schema(description = "사용자 고유 식별자", required = true)
 	private UUID userId;
@@ -60,6 +60,15 @@ public class UserProfileDto {
 	@Schema(description = "사용자 관심사 목록", example = "[\"여행\", \"음악\", \"영화\"]")
 	private Set<String> interests;
 
+	@Schema(description = "사용자 환불 계좌", example = "950002-00-553328")
+	private String account;
+
+	@Schema(description = "사용자 환불 은행", example = "국민은행")
+	private String bank;
+
+	@Schema(description = "사용자 환불 예금주명", example = "허세진")
+	private String depositorName;
+
 	@Schema(description = "프로필 생성 시간")
 	private LocalDateTime createDate;
 
@@ -89,6 +98,9 @@ public class UserProfileDto {
 			.job(profile.getJob())
 			.hobby(profile.getHobby())
 			.interests(interestNames)
+			.account(profile.getAccount())
+			.bank(profile.getBank())
+			.depositorName(profile.getDepositorName())
 			.createDate(profile.getCreatedAt())
 			.updateDate(profile.getUpdatedAt())
 			.build();

@@ -9,8 +9,11 @@ rm -rf foot-off-1-backend
 # 새 디렉토리 생성
 mkdir foot-off-1-backend
 
-# tar 파일 압축 해제
-tar -xzf deploy.tar.gz -C foot-off-1-backend
+# zip 파일 압축 해제
+unzip app.zip -d foot-off-1-backend
+
+# zip 파일 삭제
+rm app.zip
 
 # 작업 디렉토리로 이동
 cd foot-off-1-backend
@@ -23,7 +26,7 @@ cp -r ~/resources/* src/main/resources/
 
 # 기존 프로세스 종료
 echo "Stopping existing application..."
-kill $(pgrep -f backend-*.jar)
+pkill jar
 sleep 3
 
 # 애플리케이션 빌드

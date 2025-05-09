@@ -22,23 +22,29 @@ CREATE TABLE user_social_account (
                                    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
--- 프로필
-CREATE TABLE user_profile (
-                             id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '프로필 고유 식별자',
-                             user_id BINARY(16) NOT NULL UNIQUE COMMENT '사용자 ID (User 테이블 참조)',
-                             profile_image VARCHAR(255) COMMENT '프로필 이미지 URL',
-                             nickname VARCHAR(30) COMMENT '사용자 닉네임',
-                             age INT(3) COMMENT '사용자 나이',
-                             gender VARCHAR(10) COMMENT '사용자 성별',
-                             introduction TEXT COMMENT '자기소개',
-                             mbti VARCHAR(4) COMMENT '사용자 MBTI 유형',
-                             location VARCHAR(30) COMMENT '사용자 위치/지역',
-                             job VARCHAR(30) COMMENT '사용자 직업',
-                             hobby VARCHAR(30) COMMENT '사용자 취미',
-                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '프로필 생성 시간',
-                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '프로필 정보 업데이트 시간',
-                             FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
-);
+-- talkwith.user_profile definition
+
+CREATE TABLE `user_profile` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '프로필 고유 식별자',
+  `user_id` binary(16) NOT NULL COMMENT '사용자 ID (User 테이블 참조)',
+  `profile_image` varchar(255) DEFAULT NULL COMMENT '프로필 이미지 URL',
+  `nickname` varchar(30) DEFAULT NULL COMMENT '사용자 닉네임',
+  `age` int(3) DEFAULT NULL COMMENT '사용자 나이',
+  `gender` varchar(10) DEFAULT NULL COMMENT '사용자 성별',
+  `introduction` text DEFAULT NULL COMMENT '자기소개',
+  `mbti` varchar(4) DEFAULT NULL COMMENT '사용자 MBTI 유형',
+  `location` varchar(30) DEFAULT NULL COMMENT '사용자 위치/지역',
+  `job` varchar(30) DEFAULT NULL COMMENT '사용자 직업',
+  `hobby` varchar(30) DEFAULT NULL COMMENT '사용자 취미',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '프로필 생성 시간',
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '프로필 정보 업데이트 시간',
+  `account` varchar(100) DEFAULT NULL COMMENT '환불 계좌',
+  `bank` varchar(100) DEFAULT NULL COMMENT '은행',
+  `depositor_name` varchar(100) DEFAULT NULL COMMENT '예금주명',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  CONSTRAINT `user_profile_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 유저 관심사
 CREATE TABLE user_interest (

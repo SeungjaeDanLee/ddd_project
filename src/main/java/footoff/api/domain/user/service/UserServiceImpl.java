@@ -84,7 +84,10 @@ public class UserServiceImpl implements UserService {
 			userProfileDto.getMbti(),
 			userProfileDto.getLocation(),
 			userProfileDto.getJob(),
-			userProfileDto.getHobby()
+			userProfileDto.getHobby(),
+			userProfileDto.getAccount(),
+			userProfileDto.getBank(),
+			userProfileDto.getDepositorName()
 		);
 		
 		// 기존 관심사 제거 후 새 관심사 추가

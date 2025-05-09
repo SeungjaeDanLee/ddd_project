@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import footoff.api.domain.gathering.dto.*;
 import footoff.api.domain.gathering.entity.GatheringLocation;
+import footoff.api.global.common.enums.GatheringStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +57,7 @@ public class GatheringServiceImpl implements GatheringService {
                 .maxUsers(requestDto.getMaxUsers())
                 .fee(requestDto.getFee())
                 .organizer(organizer)
+                .status(GatheringStatus.RECRUITMENT)
                 .build();
 
         Gathering savedGathering = gatheringRepository.save(gathering);
@@ -101,14 +103,14 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 모든 모임을 조회하는 메소드
+     * 모집중인 모든 모임을 조회하는 메소드
      * 
-     * @return 모임 목록
+     * @return 모집중인 모임 목록 조회
      */
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getAllGatherings() {
-        return gatheringRepository.findAll().stream()
+        return gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT).stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -301,8 +303,8 @@ public class GatheringServiceImpl implements GatheringService {
         // 참가 취소 유효성 검증
         GatheringValidator.validateCancelMembership(gathering, gatheringUser);
 
-        gathering.removeUser(gatheringUser);
-        gatheringUserRepository.delete(gatheringUser);
+        // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
+        gatheringUser.cancel();
     }
     
     @Override
@@ -320,8 +322,8 @@ public class GatheringServiceImpl implements GatheringService {
         // 모임 탈퇴 유효성 검증
         GatheringValidator.validateLeaveGathering(gathering, gatheringUser);
 
-        gathering.removeUser(gatheringUser);
-        gatheringUserRepository.delete(gatheringUser);
+        // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
+        gatheringUser.cancel();
     }
 
     /**
@@ -396,7 +398,18 @@ public class GatheringServiceImpl implements GatheringService {
         // 모임 삭제 유효성 검증
         GatheringValidator.validateDeleteGathering(gathering, user);
         
-        // 모임 삭제 (연관된 참가자, 위치 정보도 함께 삭제됨)
-        gatheringRepository.delete(gathering);
+        // 참가자가 있는지 확인 (카운트 쿼리)
+        // 기본값 1 (주최자는 항상 존재)
+        int usersCount = gatheringUserRepository.countByGatheringId(gathering.getId());
+        
+        if (usersCount > 1) {
+            // 다른 참가자가 있으면 모든 참가자의 상태를 CANCELLED로 변경하고 모임 상태도 CANCEL로 변경
+            List<GatheringUser> gatheringUsers = gatheringUserRepository.findByGathering(gathering);
+            gatheringUsers.forEach(GatheringUser::cancel);
+            gathering.cancel();
+        } else {
+            // 주최자만 있으면 모임 삭제
+            gatheringRepository.delete(gathering);
+        }
     }
 } 

@@ -3,6 +3,7 @@ package footoff.api.domain.gathering.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import footoff.api.global.common.enums.GatheringStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +17,12 @@ import footoff.api.domain.user.entity.User;
 
 @Repository
 public interface GatheringRepository extends JpaRepository<Gathering, Long>, JpaSpecificationExecutor<Gathering> {
-    
+
+    /**
+     * 모집중인 모임 목록 조회
+     */
+    List<Gathering> findAllByStatus(GatheringStatus status);
+
     /**
      * 특정 날짜 이후의 모임 목록 조회
      */

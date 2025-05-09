@@ -60,6 +60,7 @@ CREATE TABLE gathering (
                            min_users INT NOT NULL COMMENT '모임 최소 인원',
                            max_users INT NOT NULL COMMENT '모임 최대 인원',
                            fee INT NOT NULL COMMENT '모임 참가비',
+                           status VARCHAR(20) NOT NULL COMMENT '모임 상태 (RECRUITMENT, EXPIRATION, CANCELLED 등)', -- ENUM -> VARCHAR(20)
                            organizer_id BINARY(16) NOT NULL COMMENT '모임 주최자 ID (User 테이블 참조)',
                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '모임 생성 시간',
                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '모임 정보 업데이트 시간',
@@ -71,7 +72,7 @@ CREATE TABLE gathering_user (
                                id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '모임 참가자 고유 식별자',
                                gathering_id BIGINT NOT NULL COMMENT '모임 ID (Gathering 테이블 참조)',
                                user_id BINARY(16) NOT NULL COMMENT '참가자 ID (User 테이블 참조)',
-                               status VARCHAR(20) NOT NULL COMMENT '참가 상태 (PENDING, APPROVED, REJECTED 등)', -- ENUM -> VARCHAR(20)
+                               status VARCHAR(20) NOT NULL COMMENT '참가 상태 (PENDING, APPROVED, REJECTED, CANCELLED 등)', -- ENUM -> VARCHAR(20)
                                role VARCHAR(20) NOT NULL COMMENT '참가자 역할 (PARTICIPANT, ORGANIZER 등)', -- ENUM -> VARCHAR(20)
                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '참가 신청 시간',
                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '참가 상태 업데이트 시간',

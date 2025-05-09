@@ -6,6 +6,7 @@ import java.util.Set;
 
 import footoff.api.domain.user.entity.User;
 import footoff.api.global.common.entity.BaseEntity;
+import footoff.api.global.common.enums.GatheringStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,6 +44,10 @@ public class Gathering extends BaseEntity {
     @Column(nullable = false)
     private Integer fee;
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private GatheringStatus status = GatheringStatus.RECRUITMENT;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
@@ -64,10 +69,11 @@ public class Gathering extends BaseEntity {
      * @param maxUsers 최대 참가자 수
      * @param fee 참가비
      * @param organizer 모임 주최자
+     * @param status 모임 상태 (기본값: RECRUITMENT)
      */
     @Builder
     public Gathering(Long id, String title, String description, LocalDateTime gatheringDate, 
-                  Integer minUsers, Integer maxUsers, Integer fee, User organizer) {
+                  Integer minUsers, Integer maxUsers, Integer fee, User organizer, GatheringStatus status) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -76,6 +82,7 @@ public class Gathering extends BaseEntity {
         this.maxUsers = maxUsers;
         this.fee = fee;
         this.organizer = organizer;
+        this.status = status != null ? status : GatheringStatus.RECRUITMENT;
     }
     
     /**
@@ -96,6 +103,22 @@ public class Gathering extends BaseEntity {
         this.minUsers = minUsers;
         this.maxUsers = maxUsers;
         this.fee = fee;
+    }
+    
+    /**
+     * 모임 상태를 변경하는 메소드
+     * 
+     * @param status 새로운 모임 상태
+     */
+    public void updateStatus(GatheringStatus status) {
+        this.status = status;
+    }
+    
+    /**
+     * 모임 상태를 취소로 변경하는 메소드
+     */
+    public void cancel() {
+        this.status = GatheringStatus.CANCELLED;
     }
     
     /**

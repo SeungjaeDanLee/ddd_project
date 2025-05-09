@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import footoff.api.domain.gathering.entity.Gathering;
@@ -24,4 +26,13 @@ public interface GatheringUserRepository extends JpaRepository<GatheringUser, Lo
     Optional<GatheringUser> findByGatheringAndUser(Gathering gathering, User user);
     
     boolean existsByGatheringIdAndUserId(Long gatheringId, UUID userId);
+    
+    /**
+     * 주최자를 제외한 모임 참가자 수 카운트
+     * @param gatheringId 모임 ID
+     * @param organizerId 주최자 ID
+     * @return 주최자를 제외한 참가자 수
+     */
+    @Query("SELECT COUNT(gu) FROM GatheringUser gu WHERE gu.gathering.id = :gatheringId")
+    int countByGatheringId(@Param("gatheringId") Long gatheringId);
 } 

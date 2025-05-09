@@ -263,7 +263,7 @@ public class GatheringController {
         @ApiResponse(responseCode = "200", description = "모임 참가 취소 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - 참가 신청 내역 없음")
     })
-    @DeleteMapping("/{gatheringId}/cancel")
+    @PostMapping("/{gatheringId}/cancel")
     public ResponseEntity<BaseResponse<String>> cancelGathering(
             @Parameter(description = "모임 ID", required = true) @PathVariable Long gatheringId,
             @Parameter(description = "취소할 사용자 ID", required = true) @RequestHeader("X-User-Id") UUID userId) {
@@ -283,7 +283,7 @@ public class GatheringController {
         @ApiResponse(responseCode = "200", description = "모임 나가기 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 - 승인된 참가자가 아님")
     })
-    @DeleteMapping("/{gatheringId}/leave")
+    @PostMapping("/{gatheringId}/leave")
     public ResponseEntity<BaseResponse<String>> leaveGathering(
             @Parameter(description = "모임 ID", required = true) @PathVariable Long gatheringId,
             @Parameter(description = "나가려는 사용자 ID", required = true) @RequestHeader("X-User-Id") UUID userId) {
@@ -304,7 +304,7 @@ public class GatheringController {
         @ApiResponse(responseCode = "403", description = "권한 없음"),
         @ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음")
     })
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<BaseResponse<String>> deleteGathering(
             @Parameter(description = "삭제할 모임 ID", required = true) @PathVariable Long id,
             @Parameter(description = "요청자 ID", required = true) @RequestHeader("X-User-Id") UUID userId) {

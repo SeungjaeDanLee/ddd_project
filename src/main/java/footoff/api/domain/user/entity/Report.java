@@ -9,6 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
+/**
+ * 신고 정보를 담는 엔티티 클래스
+ * 사용자가 다른 사용자에 대해 신고한 정보를 관리한다
+ */
 @Entity
 @Table(name = "report")
 @Getter
@@ -38,6 +42,16 @@ public class Report extends BaseEntity {
     @Column
     private ReportStatus status = ReportStatus.PENDING;
     
+    /**
+     * Report 엔티티 생성을 위한 빌더 메서드
+     * 
+     * @param id 신고 정보 고유 식별자
+     * @param reporter 신고를 등록한 사용자
+     * @param reported 신고된 사용자
+     * @param reportType 신고 유형
+     * @param reason 신고 사유
+     * @param status 신고 처리 상태 (기본값: PENDING)
+     */
     @Builder
     public Report(Long id, User reporter, User reported, ReportType reportType, 
                  String reason, ReportStatus status) {
@@ -49,6 +63,11 @@ public class Report extends BaseEntity {
         this.status = status != null ? status : ReportStatus.PENDING;
     }
     
+    /**
+     * 신고 처리 상태를 업데이트하는 메서드
+     * 
+     * @param status 업데이트할 신고 처리 상태
+     */
     public void updateStatus(ReportStatus status) {
         this.status = status;
     }

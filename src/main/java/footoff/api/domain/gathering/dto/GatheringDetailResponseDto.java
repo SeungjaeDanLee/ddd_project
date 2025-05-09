@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.global.common.enums.GatheringUserStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,27 +15,70 @@ import lombok.Getter;
  * 모임의 기본 정보, 참가자 정보, 장소 정보 등을 포함한다
  */
 @Getter
+@Schema(description = "모임 상세 정보 응답")
 public class GatheringDetailResponseDto {
+    @Schema(description = "모임 고유 식별자", example = "1")
     private final Long id;
+    
+    @Schema(description = "모임 제목", example = "주말 등산 모임")
     private final String title;
+    
+    @Schema(description = "모임 설명", example = "주말에 북한산에서 함께 등산해요.")
     private final String description;
+    
+    @Schema(description = "모임 날짜 및 시간")
     private final LocalDateTime gatheringDate;
+    
+    @Schema(description = "최소 참가자 수", example = "3")
     private final Integer minUsers;
+    
+    @Schema(description = "최대 참가자 수", example = "10")
     private final Integer maxUsers;
+    
+    @Schema(description = "참가 비용", example = "5000")
     private final Integer fee;
+    
+    @Schema(description = "모임 주최자 ID", example = "123e4567-e89b-12d3-a456-426614174000")
     private final String organizerId;
+    
+    @Schema(description = "모임 주최자 이메일", example = "organizer@example.com")
     private final String organizerEmail;
+    
+    @Schema(description = "모임 주최자 닉네임", example = "산악인")
     private final String organizerNickname;
+    
+    @Schema(description = "모임 주최자 프로필 이미지 URL")
     private final String organizerProfileImage;
+    
+    @Schema(description = "모임 생성 시간")
     private final LocalDateTime createdAt;
+    
+    @Schema(description = "모임 정보 마지막 수정 시간")
     private final LocalDateTime updatedAt;
+    
+    @Schema(description = "전체 참가자 수", example = "8")
     private final int userCount;
+    
+    @Schema(description = "대기 중인 참가자 수", example = "3")
     private final int pendingUserCount;
+    
+    @Schema(description = "승인된 참가자 수", example = "5")
     private final int approvedUserCount;
+    
+    @Schema(description = "모임 장소 정보")
     private final GatheringLocationDto location;
+    
+    @Schema(description = "모임 참가자 목록")
     private final List<ParticipantDto> participants;
+    
+    @Schema(description = "모임 정원이 가득 찼는지 여부", example = "false")
     private final boolean isFull;
+    
+    @Schema(description = "현재 사용자가 이 모임에 참가했는지 여부", example = "true")
     private final boolean isJoined;
+    
+    @Schema(description = "현재 사용자의 모임 참가 상태", example = "APPROVED", 
+            allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"})
     private final String joinStatus;
 
     /**
@@ -162,10 +206,19 @@ public class GatheringDetailResponseDto {
      * 모임 참가자 정보를 담는 내부 DTO 클래스
      */
     @Getter
+    @Schema(description = "모임 참가자 정보")
     public static class ParticipantDto {
+        @Schema(description = "참가자 ID", example = "123e4567-e89b-12d3-a456-426614174000")
         private final String userId;
+        
+        @Schema(description = "참가자 닉네임", example = "산악인")
         private final String nickname;
+        
+        @Schema(description = "참가자 프로필 이미지 URL")
         private final String profileImage;
+        
+        @Schema(description = "참가 상태", example = "APPROVED", 
+                allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"})
         private final String status;
         
         /**

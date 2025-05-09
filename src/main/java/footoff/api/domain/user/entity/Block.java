@@ -7,6 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
+/**
+ * 사용자 차단 정보를 담는 엔티티 클래스
+ * 사용자가 다른 사용자를 차단한 정보를 관리한다
+ */
 @Entity
 @Table(name = "block")
 @Getter
@@ -28,6 +32,14 @@ public class Block extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String reason;
     
+    /**
+     * Block 엔티티 생성을 위한 빌더 메서드
+     * 
+     * @param id 차단 정보 고유 식별자
+     * @param user 차단을 요청한 사용자
+     * @param blocked 차단된 사용자
+     * @param reason 차단 사유
+     */
     @Builder
     public Block(Long id, User user, User blocked, String reason) {
         this.id = id;
@@ -36,6 +48,11 @@ public class Block extends BaseEntity {
         this.reason = reason;
     }
     
+    /**
+     * 차단 사유를 업데이트하는 메서드
+     * 
+     * @param reason 업데이트할 차단 사유
+     */
     public void updateReason(String reason) {
         this.reason = reason;
     }

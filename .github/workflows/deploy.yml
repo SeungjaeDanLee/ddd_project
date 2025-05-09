@@ -27,7 +27,7 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         source: app.zip
-        target: /home/ec2-user/foot-off-1-backend
+        target: /home/ec2-user/
         
     - name: Unzip and Restart Server
       uses: appleboy/ssh-action@master

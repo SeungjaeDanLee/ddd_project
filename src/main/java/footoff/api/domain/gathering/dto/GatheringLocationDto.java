@@ -13,11 +13,11 @@ import lombok.Getter;
 @Getter
 @Schema(description = "모임 장소 정보")
 public class GatheringLocationDto {
-    @Schema(description = "장소 정보 고유 식별자", example = "1")
-    private final Long id;
+//    @Schema(description = "장소 정보 고유 식별자", example = "1")
+//    private final Long id;
     
-    @Schema(description = "연결된 모임 ID", example = "10")
-    private final Long gatheringId;
+//    @Schema(description = "연결된 모임 ID", example = "10")
+//    private final Long gatheringId;
     
     @Schema(description = "위도", example = "37.5665", required = true)
     private final Double latitude;
@@ -39,9 +39,8 @@ public class GatheringLocationDto {
     
     /**
      * GatheringLocationDto 생성자
-     * 
-     * @param id 장소 정보 ID
-     * @param gatheringId 모임 ID
+//     * @param id 장소 정보 ID
+//     * @param gatheringId 모임 ID
      * @param latitude 위도
      * @param longitude 경도
      * @param address 주소
@@ -50,11 +49,14 @@ public class GatheringLocationDto {
      * @param updatedAt 수정 시간
      */
     @Builder
-    public GatheringLocationDto(Long id, Long gatheringId, Double latitude, Double longitude, 
-                               String address, String placeName,
-                               LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.gatheringId = gatheringId;
+    public GatheringLocationDto(
+//            Long id, Long gatheringId,
+            Double latitude, Double longitude,
+            String address, String placeName,
+            LocalDateTime createdAt, LocalDateTime updatedAt
+    ) {
+//        this.id = id;
+//        this.gatheringId = gatheringId;
         this.latitude = latitude;
         this.longitude = longitude;
         this.address = address;
@@ -75,8 +77,8 @@ public class GatheringLocationDto {
         }
         
         return GatheringLocationDto.builder()
-                .id(location.getId())
-                .gatheringId(location.getGathering().getId())
+//                .id(location.getId())
+//                .gatheringId(location.getGathering().getId())
                 .latitude(location.getLatitude())
                 .longitude(location.getLongitude())
                 .address(location.getAddress())

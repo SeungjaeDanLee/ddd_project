@@ -4,6 +4,7 @@ import footoff.api.domain.gathering.dto.GatheringDetailResponseDto;
 import footoff.api.domain.gathering.dto.GatheringDto;
 import footoff.api.domain.gathering.dto.GatheringRequestDto;
 import footoff.api.domain.gathering.dto.GatheringUserDto;
+import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.gathering.service.GatheringService;
 import footoff.api.global.common.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +33,7 @@ import java.util.UUID;
 public class GatheringController {
 
     private final GatheringService gatheringService;
+    private final GatheringUserRepository gatheringUserRepository;
 
     /**
      * 새로운 모임을 생성하는 엔드포인트
@@ -75,8 +77,16 @@ public class GatheringController {
             @Parameter(description = "수정할 모임 ID", required = true) @PathVariable Long id,
             @Parameter(description = "수정할 모임 정보", required = true) @Valid @RequestBody GatheringRequestDto requestDto,
             @Parameter(description = "요청자 ID", required = true) @RequestHeader("X-User-Id") UUID userId) {
-        GatheringDto updatedGathering = gatheringService.updateGathering(id, requestDto, userId);
-        return ResponseEntity.ok(BaseResponse.onSuccess(updatedGathering));
+
+        int usersCount = gatheringUserRepository.countByGatheringId(id);
+        if (usersCount > 1) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(BaseResponse.onFailure("GATHERING_MODIFICATION_FORBIDDEN", "모임원이 있는 모임은 수정할 수 없습니다."));
+        } else {
+            GatheringDto updatedGathering = gatheringService.updateGathering(id, requestDto, userId);
+            return ResponseEntity.ok(BaseResponse.onSuccess(updatedGathering));
+        }
     }
 
     /**

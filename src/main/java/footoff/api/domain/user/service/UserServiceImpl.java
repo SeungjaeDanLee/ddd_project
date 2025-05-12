@@ -62,6 +62,13 @@ public class UserServiceImpl implements UserService {
 		}
 
 		userProfileRepository.save(userProfile);
+
+		User user = User.builder()
+				.email(userProfileDto.getEmail())
+				.phoneNumber(userProfileDto.getPhoneNumber())
+				.build();
+
+		userRepository.save(user);
 		
 		return userProfile.toDto();
 	}

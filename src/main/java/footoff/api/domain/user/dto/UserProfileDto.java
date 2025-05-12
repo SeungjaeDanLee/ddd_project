@@ -69,40 +69,48 @@ public class UserProfileDto {
 	@Schema(description = "사용자 환불 예금주명", example = "허세진")
 	private String depositorName;
 
-	@Schema(description = "프로필 생성 시간")
-	private LocalDateTime createDate;
+    @Schema(description = "이메일", example = "example@squash.com")
+    private String email;
 
-	@Schema(description = "프로필 수정 시간")
-	private LocalDateTime updateDate;
-	
-	/**
-	 * UserProfile 엔티티를 UserProfileDto로 변환하는 메서드
-	 * 
-	 * @param profile 변환할 UserProfile 엔티티
-	 * @return 변환된 UserProfileDto 객체
-	 */
-	public static UserProfileDto fromEntity(UserProfile profile) {
-		Set<String> interestNames = profile.getInterests().stream()
-			.map(UserInterest::getInterestName)
-			.collect(Collectors.toSet());
-			
-		return UserProfileDto.builder()
-			.userId(profile.getUser().getId())
-			.profileImage(profile.getProfileImage())
-			.nickname(profile.getNickname())
-			.age(profile.getAge())
-			.gender(profile.getGender())
-			.introduction(profile.getIntroduction())
-			.mbti(profile.getMbti())
-			.location(profile.getLocation())
-			.job(profile.getJob())
-			.hobby(profile.getHobby())
-			.interests(interestNames)
-			.account(profile.getAccount())
-			.bank(profile.getBank())
-			.depositorName(profile.getDepositorName())
-			.createDate(profile.getCreatedAt())
-			.updateDate(profile.getUpdatedAt())
-			.build();
-	}
+    @Schema(description = "전화번호", example = "010-1234-5678")
+    private String phoneNumber;
+
+    @Schema(description = "프로필 생성 시간")
+    private LocalDateTime createDate;
+
+    @Schema(description = "프로필 수정 시간")
+    private LocalDateTime updateDate;
+
+    /**
+     * UserProfile 엔티티를 UserProfileDto로 변환하는 메서드
+     *
+     * @param profile 변환할 UserProfile 엔티티
+     * @return 변환된 UserProfileDto 객체
+     */
+    public static UserProfileDto fromEntity(UserProfile profile) {
+        Set<String> interestNames = profile.getInterests().stream()
+                .map(UserInterest::getInterestName)
+                .collect(Collectors.toSet());
+
+        return UserProfileDto.builder()
+                .userId(profile.getUser().getId())
+                .profileImage(profile.getProfileImage())
+                .nickname(profile.getNickname())
+                .age(profile.getAge())
+                .gender(profile.getGender())
+                .introduction(profile.getIntroduction())
+                .mbti(profile.getMbti())
+                .location(profile.getLocation())
+                .job(profile.getJob())
+                .hobby(profile.getHobby())
+                .interests(interestNames)
+                .account(profile.getAccount())
+                .bank(profile.getBank())
+                .depositorName(profile.getDepositorName())
+                .email(profile.getUser().getEmail())
+                .phoneNumber(profile.getUser().getPhoneNumber())
+                .createDate(profile.getCreatedAt())
+                .updateDate(profile.getUpdatedAt())
+                .build();
+    }
 } 

@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  * 사용자 정보를 담는 엔티티 클래스
@@ -48,6 +49,7 @@ public class User extends BaseEntity {
 	private LocalDateTime lastLoginAt;
 	
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+	@JsonBackReference
 	private UserProfile profile;
 
 	/**

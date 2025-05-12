@@ -37,7 +37,12 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
      * 특정 사용자가 주최한 모임 목록 조회
      */
     List<Gathering> findByOrganizer(User organizer);
-    
+
+    /**
+     * 특정 사용자가 주최한 모임 목록 조회(취소된 모임 제외)
+     */
+    List<Gathering> findByOrganizerAndStatusIsNot(User organizer, GatheringStatus status);
+
     /**
      * 제목에 특정 키워드가 포함된 모임 목록 조회
      */

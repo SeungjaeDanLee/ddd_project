@@ -161,7 +161,7 @@ public class GatheringServiceImpl implements GatheringService {
         User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
         
-        return gatheringRepository.findByOrganizer(organizer).stream()
+        return gatheringRepository.findByOrganizerAndStatusIsNot(organizer, GatheringStatus.CANCELLED).stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }

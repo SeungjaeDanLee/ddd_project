@@ -2,12 +2,14 @@ package footoff.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 어플리케이션 진입점
  * 스프링 부트 애플리케이션의 시작점을 정의하는 메인 클래스
  */
 @SpringBootApplication
+@EnableScheduling
 public class ApiApplication {
 
 	/**

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 import footoff.api.domain.gathering.dto.*;
 import footoff.api.domain.gathering.entity.GatheringLocation;
@@ -23,6 +25,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import footoff.api.global.exception.InvalidOperationException;
 import footoff.api.global.validator.GatheringValidator;
+import footoff.api.global.common.component.DiscordNotifier;
 
 /**
  * 모임 관련 서비스 구현체
@@ -34,6 +37,7 @@ public class GatheringServiceImpl implements GatheringService {
     private final GatheringRepository gatheringRepository;
     private final GatheringUserRepository gatheringUserRepository;
     private final UserRepository userRepository;
+    private final DiscordNotifier discordNotifier;
 
     /**
      * 새로운 모임을 생성하는 메소드
@@ -256,6 +260,10 @@ public class GatheringServiceImpl implements GatheringService {
         GatheringValidator.validateRejectMembership(gatheringUser);
 
         gatheringUser.reject();
+        
+        // Discord 알림 전송
+        sendRefundNotification(user, gathering);
+        
         return GatheringUserDto.fromEntity(gatheringUser);
     }
 
@@ -277,6 +285,13 @@ public class GatheringServiceImpl implements GatheringService {
                 .collect(Collectors.toList());
     }
 
+/**
+     * 모임의 user 목록을 조회하는 메소드
+     * 
+     * @param id 모임 ID, 
+     * @return 모임 상세 조회
+     * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
+     */
     @Override
     @Transactional(readOnly = true)
     public GatheringDetailResponseDto getGatheringDetail(Long id, UUID userId) {
@@ -305,6 +320,9 @@ public class GatheringServiceImpl implements GatheringService {
 
         // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
         gatheringUser.cancel();
+        
+        // Discord 알림 전송
+        sendRefundNotification(user, gathering);
     }
     
     @Override
@@ -324,6 +342,9 @@ public class GatheringServiceImpl implements GatheringService {
 
         // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
         gatheringUser.cancel();
+        
+        // Discord 알림 전송
+        sendRefundNotification(user, gathering);
     }
 
     /**
@@ -405,11 +426,45 @@ public class GatheringServiceImpl implements GatheringService {
         if (usersCount > 1) {
             // 다른 참가자가 있으면 모든 참가자의 상태를 CANCELLED로 변경하고 모임 상태도 CANCEL로 변경
             List<GatheringUser> gatheringUsers = gatheringUserRepository.findByGathering(gathering);
-            gatheringUsers.forEach(GatheringUser::cancel);
+            
+            // 각 참가자별로 상태 변경 및 Discord 알림 전송
+            gatheringUsers.forEach(gatheringUser -> {
+                gatheringUser.cancel();
+                
+                // 주최자가 아닌 사용자에게만 환불 메시지 전송
+                if (gatheringUser.getRole() != GatheringUserRole.ORGANIZER) {
+                    User participantUser = gatheringUser.getUser();
+                    sendRefundNotification(participantUser, gathering);
+                }
+            });
+            
             gathering.cancel();
         } else {
             // 주최자만 있으면 모임 삭제
             gatheringRepository.delete(gathering);
         }
+    }
+    
+    /**
+     * 환불 알림을 디스코드로 전송하는 공통 메서드
+     * 
+     * @param user 사용자 객체
+     * @param gathering 모임 객체
+     */
+    private void sendRefundNotification(User user, Gathering gathering) {
+        Map<String, String> data = new HashMap<>();
+        data.put("nickname", user.getProfile() != null ? user.getProfile().getNickname() : "정보없음");
+        data.put("meetingName", gathering.getTitle());
+        
+        // 계좌 정보 설정 (은행명 + 계좌번호 + 예금주명)
+        String accountInfo = "정보없음";
+        if (user.getProfile() != null && user.getProfile().getAccount() != null) {
+            accountInfo = user.getProfile().getBank() + " " + 
+                          user.getProfile().getAccount() + " " + 
+                          user.getProfile().getDepositorName();
+        }
+        data.put("account", accountInfo);
+        
+        discordNotifier.sendDiscordMoneyMessage(data);
     }
 } 

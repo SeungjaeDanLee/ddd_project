@@ -37,8 +37,22 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserProfileDto createUserProfile(UserProfileDto userProfileDto) {
+		User user = userRepository.findById(userProfileDto.getUserId())
+				.orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+		// 기존 사용자 정보 업데이트
+		if (userProfileDto.getEmail() != null && !userProfileDto.getEmail().isEmpty()) {
+			user.updateEmail(userProfileDto.getEmail());
+		}
+
+		if (userProfileDto.getPhoneNumber() != null && !userProfileDto.getPhoneNumber().isEmpty()) {
+			user.updatePhoneNumber(userProfileDto.getPhoneNumber());
+		}
+
+		userRepository.save(user);
+
 		UserProfile userProfile = UserProfile.builder()
-			.user(userRepository.findById(userProfileDto.getUserId()).orElseThrow(() -> new EntityNotFoundException("User not found")))
+			.user(user)
 			.profileImage(userProfileDto.getProfileImage())
 			.nickname(userProfileDto.getNickname())
 			.age(userProfileDto.getAge())
@@ -82,6 +96,21 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserProfileDto updateUserProfile(UUID userId, UserProfileDto userProfileDto) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+		// 기존 사용자 정보 업데이트
+		if (userProfileDto.getEmail() != null && !userProfileDto.getEmail().isEmpty()) {
+			user.updateEmail(userProfileDto.getEmail());
+		}
+
+		if (userProfileDto.getPhoneNumber() != null && !userProfileDto.getPhoneNumber().isEmpty()) {
+			user.updatePhoneNumber(userProfileDto.getPhoneNumber());
+		}
+
+		userRepository.save(user);
+
+
 		UserProfile userProfile = userProfileRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("User profile not found"));
 		
 		// 기본 프로필 정보 업데이트

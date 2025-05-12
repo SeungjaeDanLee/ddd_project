@@ -27,7 +27,7 @@ CREATE TABLE user_social_account (
 CREATE TABLE `user_profile` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '프로필 고유 식별자',
   `user_id` binary(16) NOT NULL COMMENT '사용자 ID (User 테이블 참조)',
-  `profile_image` varchar(255) DEFAULT NULL COMMENT '프로필 이미지 URL',
+  `profile_image` MEDIUMTEXT DEFAULT NULL COMMENT '프로필 이미지 URL',
   `nickname` varchar(30) DEFAULT NULL COMMENT '사용자 닉네임',
   `age` int(3) DEFAULT NULL COMMENT '사용자 나이',
   `gender` varchar(10) DEFAULT NULL COMMENT '사용자 성별',

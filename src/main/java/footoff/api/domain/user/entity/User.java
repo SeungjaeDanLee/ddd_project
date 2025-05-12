@@ -118,6 +118,24 @@ public class User extends BaseEntity {
 	public void updateLanguage(Language language) {
 		this.language = language;
 	}
+
+	/**
+	 * 이메일을 업데이트하는 메서드
+	 *
+	 * @param email 업데이트할 이메일
+	 */
+	public void updateEmail(String email) {
+		this.email = email;
+	}
+
+	/**
+	 * 전화번호를 업데이트하는 메서드
+	 *
+	 * @param phoneNumber 업데이트할 전화번호
+	 */
+	public void updatePhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
 	
 	/**
 	 * 계정 인증 상태를 true로 변경하는 메서드

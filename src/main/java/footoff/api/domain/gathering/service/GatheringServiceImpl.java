@@ -28,6 +28,8 @@ import footoff.api.global.validator.GatheringValidator;
 import footoff.api.global.common.component.DiscordNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import footoff.api.domain.user.entity.Block;
+import footoff.api.domain.user.repository.BlockRepository;
 
 /**
  * 모임 관련 서비스 구현체
@@ -40,6 +42,7 @@ public class GatheringServiceImpl implements GatheringService {
     private final GatheringUserRepository gatheringUserRepository;
     private final UserRepository userRepository;
     private final DiscordNotifier discordNotifier;
+    private final BlockRepository blockRepository;
     private static final Logger log = LoggerFactory.getLogger(GatheringServiceImpl.class);
 
     /**
@@ -112,12 +115,36 @@ public class GatheringServiceImpl implements GatheringService {
     /**
      * 모집중인 모든 모임을 조회하는 메소드
      * 
-     * @return 모집중인 모임 목록 조회
+     * @param userId 현재 사용자 ID (차단한 모임 주최자의 모임을 필터링하기 위함)
+     * @return 모집중인 모임 목록 조회 (차단된 사용자가 주최한 모임은 제외)
      */
     @Override
     @Transactional(readOnly = true)
-    public List<GatheringDto> getAllGatherings() {
-        return gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT).stream()
+    public List<GatheringDto> getAllGatherings(UUID userId) {
+        List<Gathering> gatherings = gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT);
+        
+        // 차단 목록 필터링 (userId가 null이 아닌 경우)
+        if (userId != null) {
+            // 사용자가 차단한 사용자 ID 목록 조회
+            List<UUID> blockedUserIds = blockRepository.findByUserId(userId).stream()
+                .filter(Block::getIsBlock)
+                .map(block -> block.getBlocked().getId())
+                .collect(Collectors.toList());
+            
+            // 사용자가 차단당한 사용자 ID 목록 조회
+            List<UUID> blockedByUserIds = blockRepository.findByBlockedId(userId).stream()
+                .filter(Block::getIsBlock)
+                .map(block -> block.getUser().getId())
+                .collect(Collectors.toList());
+            
+            // 차단된 사용자가 주최자인 모임 또는 차단한 사용자가 주최자인 모임 필터링
+            gatherings = gatherings.stream()
+                .filter(gathering -> !blockedUserIds.contains(gathering.getOrganizer().getId())
+                                  && !blockedByUserIds.contains(gathering.getOrganizer().getId()))
+                .collect(Collectors.toList());
+        }
+        
+        return gatherings.stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }

@@ -67,9 +67,10 @@ public interface GatheringService {
     /**
      * 모든 모임을 조회하는 메소드
      * 
+     * @param userId 현재 사용자 ID (차단한 사용자 필터링용)
      * @return 모임 목록
      */
-    List<GatheringDto> getAllGatherings();
+    List<GatheringDto> getAllGatherings(UUID userId);
     
     /**
      * 현재 시간 이후의 모임을 조회하는 메소드

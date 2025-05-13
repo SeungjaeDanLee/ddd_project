@@ -15,7 +15,7 @@ public class UserRequestDto {
 		private final UUID userId;
 		private final String profileImage;
 		private final String nickname;
-		private final Integer age;
+		private final Integer birthYear;
 		private final String gender;
 		private final String introduction;
 		private final String mbti;

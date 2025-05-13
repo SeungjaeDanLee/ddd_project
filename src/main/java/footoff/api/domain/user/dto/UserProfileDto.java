@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 사용자 프로필 정보를 담는 DTO 클래스
- * 사용자의 프로필 이미지, 닉네임, 나이, 성별, MBTI, 위치, 직업, 취미, 관심사 등의 상세 정보를 포함합니다.
+ * 사용자의 프로필 이미지, 닉네임, 출생 연도, 성별, MBTI, 위치, 직업, 취미, 관심사 등의 상세 정보를 포함합니다.
  */
 @Data
 @AllArgsConstructor
@@ -36,8 +36,8 @@ public class UserProfileDto {
 	@Schema(description = "사용자 닉네임", required = true, example = "닉네임")
 	private String nickname;
 
-	@Schema(description = "사용자 나이", example = "25")
-	private Integer age;
+	@Schema(description = "출생 연도", example = "1999")
+	private Integer birthYear;
 
 	@Schema(description = "사용자 성별", example = "남성/여성")
 	private String gender;
@@ -96,7 +96,7 @@ public class UserProfileDto {
                 .userId(profile.getUser().getId())
                 .profileImage(profile.getProfileImage())
                 .nickname(profile.getNickname())
-                .age(profile.getAge())
+                .birthYear(profile.getBirthYear())
                 .gender(profile.getGender())
                 .introduction(profile.getIntroduction())
                 .mbti(profile.getMbti())

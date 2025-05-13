@@ -5,5 +5,5 @@ import lombok.Getter;
 @Getter
 public class RegisterDto {
 	private String name;
-	private int age;
+	private int birthYear;
 }

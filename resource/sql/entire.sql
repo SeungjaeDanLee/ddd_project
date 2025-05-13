@@ -29,7 +29,7 @@ CREATE TABLE `user_profile` (
   `user_id` binary(16) NOT NULL COMMENT '사용자 ID (User 테이블 참조)',
   `profile_image` MEDIUMTEXT DEFAULT NULL COMMENT '프로필 이미지 URL',
   `nickname` varchar(30) DEFAULT NULL COMMENT '사용자 닉네임',
-  `age` int(3) DEFAULT NULL COMMENT '사용자 나이',
+  `birth_year` int(4) DEFAULT NULL COMMENT '출생 연도',
   `gender` varchar(10) DEFAULT NULL COMMENT '사용자 성별',
   `introduction` text DEFAULT NULL COMMENT '자기소개',
   `mbti` varchar(4) DEFAULT NULL COMMENT '사용자 MBTI 유형',

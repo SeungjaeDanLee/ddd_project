@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
 				.user(user)
 				.profileImage(userProfileDto.getProfileImage())
 				.nickname(userProfileDto.getNickname())
-				.age(userProfileDto.getAge())
+				.birthYear(userProfileDto.getBirthYear())
 				.gender(userProfileDto.getGender())
 				.introduction(userProfileDto.getIntroduction())
 				.mbti(userProfileDto.getMbti())
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
 		userProfile.updateProfile(
 				userProfileDto.getProfileImage(),
 				userProfileDto.getNickname(),
-				userProfileDto.getAge(),
+				userProfileDto.getBirthYear(),
 				userProfileDto.getGender(),
 				userProfileDto.getIntroduction(),
 				userProfileDto.getMbti(),

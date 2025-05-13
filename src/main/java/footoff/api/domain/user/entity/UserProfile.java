@@ -40,7 +40,7 @@ public class UserProfile extends BaseEntity {
 	private String nickname;
 
 	@Column
-	private Integer age;
+	private Integer birthYear;
 
 	@Column
 	private String gender;
@@ -79,7 +79,7 @@ public class UserProfile extends BaseEntity {
 	 * @param user 연결된 사용자
 	 * @param profileImage 프로필 이미지 URL
 	 * @param nickname 사용자 닉네임
-	 * @param age 사용자 나이
+	 * @param birthYear 출생 연도
 	 * @param gender 사용자 성별
 	 * @param introduction 자기소개
 	 * @param mbti 사용자 MBTI 유형
@@ -92,13 +92,13 @@ public class UserProfile extends BaseEntity {
 	 */
 	@Builder
 	public UserProfile(Long id, User user, String profileImage, String nickname,
-					  Integer age, String gender, String introduction, String mbti,
+					  Integer birthYear, String gender, String introduction, String mbti,
 					  String location, String job, String hobby, String account, String bank, String depositorName) {
 		this.id = id;
 		this.user = user;
 		this.profileImage = profileImage;
 		this.nickname = nickname;
-		this.age = age;
+		this.birthYear = birthYear;
 		this.gender = gender;
 		this.introduction = introduction;
 		this.mbti = mbti;
@@ -115,7 +115,7 @@ public class UserProfile extends BaseEntity {
 	 *
 	 * @param profileImage 업데이트할 프로필 이미지 URL
 	 * @param nickname 업데이트할 닉네임
-	 * @param age 업데이트할 나이
+	 * @param birthYear 업데이트할 출생 연도
 	 * @param gender 업데이트할 성별
 	 * @param introduction 업데이트할 자기소개
 	 * @param mbti 업데이트할 MBTI 유형
@@ -126,12 +126,12 @@ public class UserProfile extends BaseEntity {
 	 * @param bank 업데이트할 환불 은행
 	 * @param depositorName 업데이트할 환불 예금주명
 	 */
-	public void updateProfile(String profileImage, String nickname, Integer age,
+	public void updateProfile(String profileImage, String nickname, Integer birthYear,
 							String gender, String introduction, String mbti,
 							String location, String job, String hobby, String account, String bank, String depositorName) {
 		this.profileImage = profileImage;
 		this.nickname = nickname;
-		this.age = age;
+		this.birthYear = birthYear;
 		this.gender = gender;
 		this.introduction = introduction;
 		this.mbti = mbti;
@@ -176,7 +176,7 @@ public class UserProfile extends BaseEntity {
 			.userId(user.getId())
 			.profileImage(profileImage)
 			.nickname(nickname)
-			.age(age)
+			.birthYear(birthYear)
 			.gender(gender)
 			.introduction(introduction)
 			.mbti(mbti)

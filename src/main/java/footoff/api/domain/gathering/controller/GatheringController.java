@@ -140,8 +140,9 @@ public class GatheringController {
             content = @Content(schema = @Schema(implementation = GatheringDto.class)))
     })
     @GetMapping
-    public ResponseEntity<BaseResponse<List<GatheringDto>>> getAllGatherings() {
-        List<GatheringDto> gatherings = gatheringService.getAllGatherings();
+    public ResponseEntity<BaseResponse<List<GatheringDto>>> getAllGatherings(
+            @Parameter(description = "현재 사용자 ID (선택사항)") @RequestHeader(value = "X-User-Id", required = true) UUID userId) {
+        List<GatheringDto> gatherings = gatheringService.getAllGatherings(userId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatherings));
     }
 

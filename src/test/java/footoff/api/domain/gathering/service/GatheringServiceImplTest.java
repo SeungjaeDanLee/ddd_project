@@ -13,6 +13,7 @@ import footoff.api.global.common.enums.Language;
 import footoff.api.global.common.enums.UserActivityStatus;
 import footoff.api.global.common.enums.GatheringUserStatus;
 import footoff.api.global.common.enums.GatheringUserRole;
+import footoff.api.global.common.enums.GatheringStatus;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -211,10 +212,10 @@ public class GatheringServiceImplTest {
         gatherings.add(testGathering);
         gatherings.add(testGathering2);
 
-        when(gatheringRepository.findAll()).thenReturn(gatherings);
+        when(gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT)).thenReturn(gatherings);
 
         // When
-        List<GatheringDto> result = gatheringService.getAllGatherings();
+        List<GatheringDto> result = gatheringService.getAllGatherings(null);
 
         // Then
         assertNotNull(result);
@@ -224,6 +225,6 @@ public class GatheringServiceImplTest {
         assertEquals("서울시 강남구", result.get(0).getAddress());
         assertEquals("서울시 서초구", result.get(1).getAddress());
 
-        verify(gatheringRepository, times(1)).findAll();
+        verify(gatheringRepository, times(1)).findAllByStatus(GatheringStatus.RECRUITMENT);
     }
 } 

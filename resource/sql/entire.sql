@@ -114,13 +114,18 @@ CREATE TABLE report (
 );
 
 -- 차단
-CREATE TABLE block (
-                       id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '차단 고유 식별자',
-                       user_id BINARY(16) NOT NULL COMMENT '차단을 실행한 사용자 ID (User 테이블 참조)',
-                       blocked_id BINARY(16) NOT NULL COMMENT '차단된 사용자 ID (User 테이블 참조)',
-                       reason TEXT COMMENT '차단 사유',
-                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '차단 등록 시간',
-                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '차단 정보 업데이트 시간',
-                       FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-                       FOREIGN KEY (blocked_id) REFERENCES user(id) ON DELETE CASCADE
-);
+
+CREATE TABLE `block` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '차단 고유 식별자',
+  `user_id` binary(16) NOT NULL COMMENT '차단을 실행한 사용자 ID (User 테이블 참조)',
+  `blocked_id` binary(16) NOT NULL COMMENT '차단된 사용자 ID (User 테이블 참조)',
+  `reason` text DEFAULT NULL COMMENT '차단 사유',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '차단 등록 시간',
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '차단 정보 업데이트 시간',
+  `is_block` tinyint(1) DEFAULT NULL COMMENT '차단 여부',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `blocked_id` (`blocked_id`),
+  CONSTRAINT `block_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `block_ibfk_2` FOREIGN KEY (`blocked_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

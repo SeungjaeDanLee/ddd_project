@@ -19,6 +19,8 @@ import footoff.api.domain.user.dto.UserDto;
 import footoff.api.domain.user.dto.UserProfileDto;
 import footoff.api.domain.user.service.UserService;
 import footoff.api.global.common.BaseResponse;
+import footoff.api.global.common.enums.ReportType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -158,6 +160,15 @@ public class UserController {
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(BaseResponse.onFailure("ERROR", e.getMessage()));
 		}
+	}
+
+	@PostMapping("/report")
+	public ResponseEntity<BaseResponse<Void>> reportUser(
+		@Parameter(description = "신고할 사용자 ID", required = true) @RequestBody UUID userId,
+		@Parameter(description = "신고 유형", required = true) @RequestBody ReportType reportType,
+		@Parameter(description = "신고 사유", required = true) @RequestBody String reason) {
+			
+		return ResponseEntity.ok(BaseResponse.onSuccess(null));
 	}
 
     /**

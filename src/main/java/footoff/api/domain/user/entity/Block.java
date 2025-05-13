@@ -31,6 +31,9 @@ public class Block extends BaseEntity {
     
     @Column(columnDefinition = "TEXT")
     private String reason;
+
+	@Column(name = "is_block")
+	private Boolean isBlock;
     
     /**
      * Block 엔티티 생성을 위한 빌더 메서드
@@ -39,13 +42,15 @@ public class Block extends BaseEntity {
      * @param user 차단을 요청한 사용자
      * @param blocked 차단된 사용자
      * @param reason 차단 사유
+	 * @param isBlock 차단 여부	
      */
     @Builder
-    public Block(Long id, User user, User blocked, String reason) {
+    public Block(Long id, User user, User blocked, String reason, Boolean isBlock) {
         this.id = id;
         this.user = user;
         this.blocked = blocked;
         this.reason = reason;
+        this.isBlock = isBlock;
     }
     
     /**
@@ -56,4 +61,13 @@ public class Block extends BaseEntity {
     public void updateReason(String reason) {
         this.reason = reason;
     }
+
+	/*
+	 * 차단 여부를 업데이트하는 메서드
+	 * 
+	 * @param isBlock 업데이트할 차단 여부
+	 */
+	public void updateIsBlock(Boolean isBlock) {
+		this.isBlock = isBlock;
+	}
 } 

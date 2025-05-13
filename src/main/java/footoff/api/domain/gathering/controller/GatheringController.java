@@ -141,7 +141,7 @@ public class GatheringController {
     })
     @GetMapping
     public ResponseEntity<BaseResponse<List<GatheringDto>>> getAllGatherings(
-            @Parameter(description = "현재 사용자 ID (선택사항)") @RequestHeader(value = "X-User-Id", required = true) UUID userId) {
+            @Parameter(description = "현재 사용자 ID") @RequestHeader(value = "X-User-Id", required = true) UUID userId) {
         List<GatheringDto> gatherings = gatheringService.getAllGatherings(userId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatherings));
     }

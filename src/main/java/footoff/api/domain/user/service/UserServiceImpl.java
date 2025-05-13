@@ -14,6 +14,7 @@ import footoff.api.domain.user.entity.UserInterest;
 import footoff.api.domain.user.repository.UserProfileRepository;
 import footoff.api.domain.user.repository.UserRepository;
 import footoff.api.global.exception.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 /**
  * 사용자 서비스 구현체
@@ -141,6 +142,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteUserProfile(UUID userId) {
 		userProfileRepository.deleteByUserId(userId);
 	}

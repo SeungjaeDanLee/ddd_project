@@ -113,12 +113,19 @@ public class Gathering extends BaseEntity {
     public void updateStatus(GatheringStatus status) {
         this.status = status;
     }
-    
+
     /**
      * 모임 상태를 취소로 변경하는 메소드
      */
     public void cancel() {
         this.status = GatheringStatus.CANCELLED;
+    }
+
+    /**
+     * 모임 상태를 삭제로 변경하는 메소드
+     */
+    public void delete() {
+        this.status = GatheringStatus.DELETED;
     }
     
     /**

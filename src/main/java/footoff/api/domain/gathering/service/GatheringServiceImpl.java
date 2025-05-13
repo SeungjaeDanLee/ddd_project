@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import footoff.api.global.exception.InvalidOperationException;
 import footoff.api.global.validator.GatheringValidator;
 import footoff.api.global.common.component.DiscordNotifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 모임 관련 서비스 구현체
@@ -38,6 +40,7 @@ public class GatheringServiceImpl implements GatheringService {
     private final GatheringUserRepository gatheringUserRepository;
     private final UserRepository userRepository;
     private final DiscordNotifier discordNotifier;
+    private static final Logger log = LoggerFactory.getLogger(GatheringServiceImpl.class);
 
     /**
      * 새로운 모임을 생성하는 메소드
@@ -165,7 +168,7 @@ public class GatheringServiceImpl implements GatheringService {
         User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
         
-        return gatheringRepository.findByOrganizerAndStatusIsNot(organizer, GatheringStatus.CANCELLED).stream()
+        return gatheringRepository.findByOrganizerAndStatusIsNot(organizer, GatheringStatus.DELETED).stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -305,7 +308,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     @Override
     @Transactional
-    public void cancelGathering(Long gatheringId, UUID userId) {
+    public void cancelGatheringByUser(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
 
@@ -424,7 +427,7 @@ public class GatheringServiceImpl implements GatheringService {
         int usersCount = gatheringUserRepository.countByGatheringId(gathering.getId());
         
         if (usersCount > 1) {
-            // 다른 참가자가 있으면 모든 참가자의 상태를 CANCELLED로 변경하고 모임 상태도 CANCEL로 변경
+            // 다른 참가자가 있으면 모든 참가자의 상태를 CANCELLED로 변경하고 모임 상태도 DELETED로 변경
             List<GatheringUser> gatheringUsers = gatheringUserRepository.findByGathering(gathering);
             
             // 각 참가자별로 상태 변경 및 Discord 알림 전송
@@ -438,11 +441,60 @@ public class GatheringServiceImpl implements GatheringService {
                 }
             });
             
-            gathering.cancel();
+            gathering.delete();
         } else {
             // 주최자만 있으면 모임 삭제
             gatheringRepository.delete(gathering);
         }
+    }
+
+    /**
+     * 시스템에 의해 모임을 취소하는 메소드 (최소 인원 미달 등의 자동 취소 조건)
+     *
+     * @param gatheringId 취소할 모임 ID
+     * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
+     */
+    @Override
+    @Transactional
+    public void cancelGatheringBySystem(Long gatheringId) {
+        Gathering gathering = gatheringRepository.findById(gatheringId)
+                .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
+
+        // 이미 취소되었거나 만료된 모임은 처리하지 않음
+        if (gathering.getStatus() != GatheringStatus.RECRUITMENT) {
+            log.info("이미 취소되었거나 만료된 모임입니다. 모임 ID: {}, 현재 상태: {}",
+                    gathering.getId(), gathering.getStatus());
+            return;
+        }
+
+        // 참가자가 있는지 확인 (카운트 쿼리)
+        // 기본값 1 (주최자는 항상 존재)
+        int usersCount = gatheringUserRepository.countByGatheringId(gathering.getId());
+
+        if (usersCount > 1) {
+            // 모든 참가자의 상태를 취소로 변경
+            List<GatheringUser> gatheringUsers = gatheringUserRepository.findByGathering(gathering);
+
+            // 각 참가자별로 상태 변경 및 알림 전송
+            gatheringUsers.forEach(gatheringUser -> {
+                gatheringUser.cancel();
+
+                // 주최자가 아닌 사용자에게만 환불 메시지 전송
+                if (gatheringUser.getRole() != GatheringUserRole.ORGANIZER) {
+                    User participantUser = gatheringUser.getUser();
+                    sendRefundNotification(participantUser, gathering);
+                }
+            });
+
+            // 모임 상태 취소로 변경
+            gathering.cancel();
+
+        } else {
+            // 모임 상태 취소로 변경
+            gathering.cancel();
+        }
+        log.info("시스템에 의한 모임 취소 처리 완료 - 모임 ID: {}, 제목: {}, 취소 이유: {}",
+                gathering.getId(), gathering.getTitle(), "최소 인원 미달에 따른 자동 취소");
     }
     
     /**

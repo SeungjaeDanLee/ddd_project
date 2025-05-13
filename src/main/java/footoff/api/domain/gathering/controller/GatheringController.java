@@ -277,7 +277,7 @@ public class GatheringController {
     public ResponseEntity<BaseResponse<String>> cancelGathering(
             @Parameter(description = "모임 ID", required = true) @PathVariable Long gatheringId,
             @Parameter(description = "취소할 사용자 ID", required = true) @RequestHeader("X-User-Id") UUID userId) {
-        gatheringService.cancelGathering(gatheringId, userId);
+        gatheringService.cancelGatheringByUser(gatheringId, userId);
         return ResponseEntity.ok(BaseResponse.onSuccess("모임 참가가 취소되었습니다."));
     }
     

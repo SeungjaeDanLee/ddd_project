@@ -23,4 +23,16 @@ public class BatchScheduler {
 
         log.info("배치 작업 종료됨");
     }
+    
+    // 매일 오후 6시에 실행
+    @Scheduled(cron = "0 0 18 * * *")
+    public void checkInsufficientUsers() {
+        log.info("최소 인원 미달 모임 자동 취소 배치 작업 실행됨");
+        
+        // 최소 인원 미달 모임 자동 취소 처리
+        batchService.autoCancelIfUnderMin();
+        
+        log.info("최소 인원 미달 모임 자동 취소 배치 작업 종료됨");
+    }
+
 }

@@ -135,7 +135,7 @@ public interface GatheringService {
      * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      * @throws IllegalStateException 참가 신청 상태가 아닌 경우
      */
-    void cancelGathering(Long gatheringId, UUID userId);
+    void cancelGatheringByUser(Long gatheringId, UUID userId);
     
     /**
      * 모임에서 나가는 메소드 (참가 승인 이후 상태)
@@ -155,4 +155,12 @@ public interface GatheringService {
      * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
      */
     List<GatheringUserDto> getGatheringUsers(Long gatheringId);
+    
+    /**
+     * 시스템에 의해 모임을 취소하는 메소드 (최소 인원 미달 등의 자동 취소 조건)
+     * 
+     * @param gatheringId 취소할 모임 ID
+     * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
+     */
+    void cancelGatheringBySystem(Long gatheringId);
 } 

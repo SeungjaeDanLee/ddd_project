@@ -13,6 +13,19 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
+# 액추에이터 설정
+management:
+  endpoints:
+    web:
+      base-path: /manage
+      exposure:
+        include: health,info
+      path-mapping:
+        health: health
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
     org.springframework.web: INFO

@@ -41,30 +41,6 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 	private final UserService userService;
 
-	/**
-	 * 모든 사용자 목록을 조회하는 API 엔드포인트
-	 * 시스템에 등록된 모든 사용자의 기본 정보를 반환합니다.
-	 * 
-	 * @return 사용자 목록 또는 에러 메시지가 포함된 응답 엔티티
-	 */
-	@Operation(summary = "전체 사용자 목록 조회", description = "시스템에 등록된 모든 사용자의 기본 정보 목록을 반환합니다.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "조회 성공", 
-			content = @Content(schema = @Schema(implementation = UserDto.class))),
-		@ApiResponse(responseCode = "400", description = "잘못된 요청")
-	})
-	@GetMapping
-	public ResponseEntity<BaseResponse<List<UserDto>>> getUsers() {
-		try {
-			List<UserDto> users = userService.getUsers().stream()
-				.map(User::toDto)
-				.collect(Collectors.toList());
-			return ResponseEntity.ok(BaseResponse.onSuccess(users));
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(BaseResponse.onFailure("ERROR", e.getMessage()));
-		}
-	}
-
     /**
      * 새로운 사용자 프로필을 생성하는 API 엔드포인트
      * 사용자의 프로필 정보(닉네임, 출생 연도, 성별, 관심사 등)를 등록합니다.

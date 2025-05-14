@@ -9,12 +9,6 @@ import footoff.api.domain.user.entity.User;
  * 사용자 관련 서비스 인터페이스
  */
 public interface UserService {
-    
-    /**
-     * 모든 사용자 목록 조회
-     * @return 사용자 목록
-     */
-    List<User> getUsers();
 
     /**
      * 사용자 프로필을 생성하는 메소드

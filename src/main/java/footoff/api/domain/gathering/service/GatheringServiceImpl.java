@@ -47,7 +47,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 새로운 모임을 생성하는 메소드
-     * 
+     *
      * @param requestDto 모임 생성 요청 데이터
      * @param organizerId 모임 주최자 ID
      * @return 생성된 모임 정보
@@ -99,7 +99,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * ID로 모임을 조회하는 메소드
-     * 
+     *
      * @param id 모임 ID
      * @return 조회된 모임 정보
      * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
@@ -114,36 +114,36 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 모집중인 모든 모임을 조회하는 메소드
-     * 
+     *
      * @param userId 현재 사용자 ID (차단한 모임 주최자의 모임을 필터링하기 위함)
      * @return 모집중인 모임 목록 조회 (차단된 사용자가 주최한 모임은 제외)
      */
     @Override
     @Transactional(readOnly = true)
     public List<GatheringDto> getAllGatherings(UUID userId) {
-        List<Gathering> gatherings = gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT);
-        
+        List<Gathering> gatherings = gatheringRepository.findAllRecruitingAndNotBlocked(GatheringStatus.RECRUITMENT, userId);
+
         // 차단 목록 필터링 (userId가 null이 아닌 경우)
-        if (userId != null) {
-            // 사용자가 차단한 사용자 ID 목록 조회
-            List<UUID> blockedUserIds = blockRepository.findByUserId(userId).stream()
-                .filter(Block::getIsBlock)
-                .map(block -> block.getBlocked().getId())
-                .collect(Collectors.toList());
-            
-            // 사용자가 차단당한 사용자 ID 목록 조회
-            List<UUID> blockedByUserIds = blockRepository.findByBlockedId(userId).stream()
-                .filter(Block::getIsBlock)
-                .map(block -> block.getUser().getId())
-                .collect(Collectors.toList());
-            
-            // 차단된 사용자가 주최자인 모임 또는 차단한 사용자가 주최자인 모임 필터링
-            gatherings = gatherings.stream()
-                .filter(gathering -> !blockedUserIds.contains(gathering.getOrganizer().getId())
-                                  && !blockedByUserIds.contains(gathering.getOrganizer().getId()))
-                .collect(Collectors.toList());
-        }
-        
+//        if (userId != null) {
+//            // 사용자가 차단한 사용자 ID 목록 조회
+//            List<UUID> blockedUserIds = blockRepository.findByUserId(userId).stream()
+//                .filter(Block::getIsBlock)
+//                .map(block -> block.getBlocked().getId())
+//                .collect(Collectors.toList());
+//
+//            // 사용자가 차단당한 사용자 ID 목록 조회
+//            List<UUID> blockedByUserIds = blockRepository.findByBlockedId(userId).stream()
+//                .filter(Block::getIsBlock)
+//                .map(block -> block.getUser().getId())
+//                .collect(Collectors.toList());
+//
+//            // 차단된 사용자가 주최자인 모임 또는 차단한 사용자가 주최자인 모임 필터링
+//            gatherings = gatherings.stream()
+//                .filter(gathering -> !blockedUserIds.contains(gathering.getOrganizer().getId())
+//                                  && !blockedByUserIds.contains(gathering.getOrganizer().getId()))
+//                .collect(Collectors.toList());
+//        }
+
         return gatherings.stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
@@ -151,7 +151,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 현재 시간 이후의 모임을 조회하는 메소드
-     * 
+     *
      * @return 예정된 모임 목록
      */
     @Override
@@ -165,7 +165,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 특정 사용자가 참가한 모임을 조회하는 메소드
-     * 
+     *
      * @param userId 사용자 ID
      * @return 사용자가 참가한 모임 목록
      * @throws EntityNotFoundException 해당 ID의 사용자를 찾을 수 없는 경우
@@ -175,7 +175,7 @@ public class GatheringServiceImpl implements GatheringService {
     public List<GatheringDto> getUserGatherings(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-        
+
         return gatheringUserRepository.findByUser(user).stream()
                 .map(GatheringUser::getGathering)
                 .map(GatheringDto::fromEntity)
@@ -184,7 +184,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 특정 사용자가 주최한 모임을 조회하는 메소드
-     * 
+     *
      * @param organizerId 주최자 ID
      * @return 주최자가 생성한 모임 목록
      * @throws EntityNotFoundException 해당 ID의 사용자를 찾을 수 없는 경우
@@ -194,7 +194,7 @@ public class GatheringServiceImpl implements GatheringService {
     public List<GatheringDto> getOrganizerGatherings(UUID organizerId) {
         User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
-        
+
         return gatheringRepository.findByOrganizerAndStatusIsNot(organizer, GatheringStatus.DELETED).stream()
                 .map(GatheringDto::fromEntity)
                 .collect(Collectors.toList());
@@ -202,7 +202,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 모임 참가 신청을 처리하는 메소드
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param userId 사용자 ID
      * @return 생성된 gathering 정보
@@ -241,7 +241,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 모임 참가 신청을 승인하는 메소드
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param userId 사용자 ID
      * @return 승인된 gathering 정보
@@ -268,7 +268,7 @@ public class GatheringServiceImpl implements GatheringService {
 
     /**
      * 모임 참가 신청을 거부하는 메소드
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param userId 사용자 ID
      * @return 거부된 gathering 정보
@@ -290,16 +290,16 @@ public class GatheringServiceImpl implements GatheringService {
         GatheringValidator.validateRejectMembership(gatheringUser);
 
         gatheringUser.reject();
-        
+
         // Discord 알림 전송
         sendRefundNotification(user, gathering);
-        
+
         return GatheringUserDto.fromEntity(gatheringUser);
     }
 
     /**
      * 모임의 user 목록을 조회하는 메소드
-     * 
+     *
      * @param gatheringId 모임 ID
      * @return 모임 user 목록
      * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
@@ -309,7 +309,7 @@ public class GatheringServiceImpl implements GatheringService {
     public List<GatheringUserDto> getGatheringUsers(Long gatheringId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
-        
+
         return gathering.getUsers().stream()
                 .map(GatheringUserDto::fromEntity)
                 .collect(Collectors.toList());
@@ -317,8 +317,8 @@ public class GatheringServiceImpl implements GatheringService {
 
 /**
      * 모임의 user 목록을 조회하는 메소드
-     * 
-     * @param id 모임 ID, 
+     *
+     * @param id 모임 ID,
      * @return 모임 상세 조회
      * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
      */
@@ -329,7 +329,7 @@ public class GatheringServiceImpl implements GatheringService {
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
 
         String currentUserId = userId != null ? userId.toString() : null;
-        
+
         return GatheringDetailResponseDto.fromEntity(gathering, currentUserId);
     }
 
@@ -350,11 +350,11 @@ public class GatheringServiceImpl implements GatheringService {
 
         // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
         gatheringUser.cancel();
-        
+
         // Discord 알림 전송
         sendRefundNotification(user, gathering);
     }
-    
+
     @Override
     @Transactional
     public void leaveGathering(Long gatheringId, UUID userId) {
@@ -372,14 +372,14 @@ public class GatheringServiceImpl implements GatheringService {
 
         // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
         gatheringUser.cancel();
-        
+
         // Discord 알림 전송
         sendRefundNotification(user, gathering);
     }
 
     /**
      * 모임 정보를 업데이트하는 메소드
-     * 
+     *
      * @param id 모임 ID
      * @param requestDto 모임 업데이트 요청 데이터
      * @param userId 요청한 사용자 ID
@@ -392,12 +392,12 @@ public class GatheringServiceImpl implements GatheringService {
     public GatheringDto updateGathering(Long id, GatheringRequestDto requestDto, UUID userId) {
         Gathering gathering = gatheringRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
-        
+
         // 요청자가 주최자인지 확인
         if (!gathering.getOrganizer().getId().equals(userId)) {
             throw new InvalidOperationException("Only the organizer can update the gathering");
         }
-        
+
         // 모임 정보 업데이트
         gathering.updateGathering(
                 requestDto.getTitle(),
@@ -407,11 +407,11 @@ public class GatheringServiceImpl implements GatheringService {
                 requestDto.getMaxUsers(),
                 requestDto.getFee()
         );
-        
+
         // 장소 정보 업데이트
         if (requestDto.getLocation() != null) {
             GatheringLocationDto locationDto = requestDto.getLocation();
-            
+
             if (gathering.getLocation() != null) {
                 // 기존 장소 정보가 있으면 업데이트
                 gathering.getLocation().updateLocation(
@@ -429,45 +429,45 @@ public class GatheringServiceImpl implements GatheringService {
                         .address(locationDto.getAddress())
                         .placeName(locationDto.getPlaceName())
                         .build();
-                
+
                 gathering.setLocation(location);
             }
         }
-        
+
         return GatheringDto.fromEntity(gathering);
     }
-    
+
     @Override
     @Transactional
     public void deleteGathering(Long id, UUID userId) {
         Gathering gathering = gatheringRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
-                
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-                
+
         // 모임 삭제 유효성 검증
         GatheringValidator.validateDeleteGathering(gathering, user);
-        
+
         // 참가자가 있는지 확인 (카운트 쿼리)
         // 기본값 1 (주최자는 항상 존재)
         int usersCount = gatheringUserRepository.countByGatheringId(gathering.getId());
-        
+
         if (usersCount > 1) {
             // 다른 참가자가 있으면 모든 참가자의 상태를 CANCELLED로 변경하고 모임 상태도 DELETED로 변경
             List<GatheringUser> gatheringUsers = gatheringUserRepository.findByGathering(gathering);
-            
+
             // 각 참가자별로 상태 변경 및 Discord 알림 전송
             gatheringUsers.forEach(gatheringUser -> {
                 gatheringUser.cancel();
-                
+
                 // 주최자가 아닌 사용자에게만 환불 메시지 전송
                 if (gatheringUser.getRole() != GatheringUserRole.ORGANIZER) {
                     User participantUser = gatheringUser.getUser();
                     sendRefundNotification(participantUser, gathering);
                 }
             });
-            
+
             gathering.delete();
         } else {
             // 주최자만 있으면 모임 삭제

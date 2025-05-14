@@ -2,6 +2,7 @@ package footoff.api.domain.gathering.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import footoff.api.global.common.enums.GatheringStatus;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,25 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
      * 모집중인 모임 목록 조회
      */
     List<Gathering> findAllByStatus(GatheringStatus status);
+
+
+    /**
+     * 모집중인 모임 목록 조회(차단된 인원을 제외)
+     */
+    @Query("""
+            SELECT g FROM Gathering g
+            WHERE g.status = :status
+            AND g.organizer.id NOT IN (
+                SELECT b.blocked.id FROM Block b
+                WHERE b.user.id = :userId AND b.isBlock = true
+            )
+            AND g.organizer.id NOT IN (
+                SELECT b.user.id FROM Block b
+                WHERE b.blocked.id = :userId AND b.isBlock = true
+            )
+            """)
+    List<Gathering> findAllRecruitingAndNotBlocked(@Param("status") GatheringStatus status, @Param("userId") UUID userId);
+
 
     /**
      * 특정 날짜 이후의 모임 목록 조회

@@ -1,9 +1,6 @@
 package footoff.api.domain.gathering.controller;
 
-import footoff.api.domain.gathering.dto.GatheringDetailResponseDto;
-import footoff.api.domain.gathering.dto.GatheringDto;
-import footoff.api.domain.gathering.dto.GatheringRequestDto;
-import footoff.api.domain.gathering.dto.GatheringUserDto;
+import footoff.api.domain.gathering.dto.*;
 import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.gathering.service.GatheringService;
 import footoff.api.global.common.BaseResponse;
@@ -140,9 +137,9 @@ public class GatheringController {
             content = @Content(schema = @Schema(implementation = GatheringDto.class)))
     })
     @GetMapping
-    public ResponseEntity<BaseResponse<List<GatheringDto>>> getAllGatherings(
+    public ResponseEntity<BaseResponse<List<GatheringWithApprovedUsersDto>>> getAllGatherings(
             @Parameter(description = "현재 사용자 ID") @RequestHeader(value = "X-User-Id", required = true) UUID userId) {
-        List<GatheringDto> gatherings = gatheringService.getAllGatherings(userId);
+        List<GatheringWithApprovedUsersDto> gatherings = gatheringService.getAllGatherings(userId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatherings));
     }
 
@@ -234,10 +231,10 @@ public class GatheringController {
         @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @PostMapping("/{gatheringId}/approve/{userId}")
-    public ResponseEntity<BaseResponse<GatheringUserDto>> approveMembership(
+    public ResponseEntity<BaseResponse<GatheringUserDto>> approveUser(
             @Parameter(description = "모임 ID", required = true) @PathVariable Long gatheringId,
             @Parameter(description = "승인할 사용자 ID", required = true) @PathVariable UUID userId) {
-        GatheringUserDto gatheringUser = gatheringService.approveMembership(gatheringId, userId);
+        GatheringUserDto gatheringUser = gatheringService.approveUser(gatheringId, userId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatheringUser));
     }
 
@@ -255,10 +252,10 @@ public class GatheringController {
         @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @PostMapping("/{gatheringId}/reject/{userId}")
-    public ResponseEntity<BaseResponse<GatheringUserDto>> rejectMembership(
+    public ResponseEntity<BaseResponse<GatheringUserDto>> rejectUser(
             @Parameter(description = "모임 ID", required = true) @PathVariable Long gatheringId,
             @Parameter(description = "거부할 사용자 ID", required = true) @PathVariable UUID userId) {
-        GatheringUserDto gatheringUser = gatheringService.rejectMembership(gatheringId, userId);
+        GatheringUserDto gatheringUser = gatheringService.rejectUser(gatheringId, userId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatheringUser));
     }
     

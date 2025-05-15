@@ -2,18 +2,15 @@ package footoff.api.domain.gathering.service;
 
 import footoff.api.domain.gathering.dto.GatheringDto;
 import footoff.api.domain.gathering.dto.GatheringRequestDto;
+import footoff.api.domain.gathering.dto.GatheringWithApprovedUsersDto;
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringLocation;
 import footoff.api.domain.gathering.entity.GatheringUser;
-import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.gathering.repository.GatheringRepository;
+import footoff.api.domain.gathering.repository.GatheringUserRepository;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
-import footoff.api.global.common.enums.Language;
-import footoff.api.global.common.enums.UserActivityStatus;
-import footoff.api.global.common.enums.GatheringUserStatus;
-import footoff.api.global.common.enums.GatheringUserRole;
-import footoff.api.global.common.enums.GatheringStatus;
+import footoff.api.global.common.enums.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +19,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,7 +73,7 @@ public class GatheringServiceImplTest {
                 .fee(0)
                 .organizer(testUser)
                 .build();
-                
+
         testLocation = GatheringLocation.builder()
                 .id(1L)
                 .gathering(testGathering)
@@ -195,7 +195,7 @@ public class GatheringServiceImplTest {
                 .fee(5000)
                 .organizer(testUser)
                 .build();
-                
+
         GatheringLocation testLocation2 = GatheringLocation.builder()
                 .id(2L)
                 .gathering(testGathering2)
@@ -204,10 +204,10 @@ public class GatheringServiceImplTest {
                 .address("서울시 서초구")
                 .placeName("테스트 장소 2")
                 .build();
-                
+
         testGathering.setLocation(testLocation);
         testGathering2.setLocation(testLocation2);
-        
+
         List<Gathering> gatherings = new ArrayList<>();
         gatherings.add(testGathering);
         gatherings.add(testGathering2);
@@ -215,7 +215,7 @@ public class GatheringServiceImplTest {
         when(gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT)).thenReturn(gatherings);
 
         // When
-        List<GatheringDto> result = gatheringService.getAllGatherings(null);
+        List<GatheringWithApprovedUsersDto> result = gatheringService.getAllGatherings(null);
 
         // Then
         assertNotNull(result);

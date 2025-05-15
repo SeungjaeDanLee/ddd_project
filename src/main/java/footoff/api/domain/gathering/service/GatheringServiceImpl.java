@@ -120,32 +120,11 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<GatheringDto> getAllGatherings(UUID userId) {
-        List<Gathering> gatherings = gatheringRepository.findAllRecruitingAndNotBlocked(GatheringStatus.RECRUITMENT, userId);
-
-        // 차단 목록 필터링 (userId가 null이 아닌 경우)
-//        if (userId != null) {
-//            // 사용자가 차단한 사용자 ID 목록 조회
-//            List<UUID> blockedUserIds = blockRepository.findByUserId(userId).stream()
-//                .filter(Block::getIsBlock)
-//                .map(block -> block.getBlocked().getId())
-//                .collect(Collectors.toList());
-//
-//            // 사용자가 차단당한 사용자 ID 목록 조회
-//            List<UUID> blockedByUserIds = blockRepository.findByBlockedId(userId).stream()
-//                .filter(Block::getIsBlock)
-//                .map(block -> block.getUser().getId())
-//                .collect(Collectors.toList());
-//
-//            // 차단된 사용자가 주최자인 모임 또는 차단한 사용자가 주최자인 모임 필터링
-//            gatherings = gatherings.stream()
-//                .filter(gathering -> !blockedUserIds.contains(gathering.getOrganizer().getId())
-//                                  && !blockedByUserIds.contains(gathering.getOrganizer().getId()))
-//                .collect(Collectors.toList());
-//        }
+    public List<GatheringWithApprovedUsersDto> getAllGatherings(UUID userId) {
+        List<Gathering> gatherings = gatheringRepository.findAllGatherings(GatheringStatus.RECRUITMENT, GatheringUserStatus.APPROVED, userId);
 
         return gatherings.stream()
-                .map(GatheringDto::fromEntity)
+                .map(GatheringWithApprovedUsersDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -249,7 +228,7 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringUserDto approveMembership(Long gatheringId, UUID userId) {
+    public GatheringUserDto approveUser(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
 
@@ -257,10 +236,10 @@ public class GatheringServiceImpl implements GatheringService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
         GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
-                .orElseThrow(() -> new EntityNotFoundException("Membership application not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User application not found"));
 
         // 참가 승인 유효성 검증
-        GatheringValidator.validateApproveMembership(gathering, gatheringUser);
+        GatheringValidator.validateApproveUser(gathering, gatheringUser);
 
         gatheringUser.approve();
         return GatheringUserDto.fromEntity(gatheringUser);
@@ -276,7 +255,7 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringUserDto rejectMembership(Long gatheringId, UUID userId) {
+    public GatheringUserDto rejectUser(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
 
@@ -284,10 +263,10 @@ public class GatheringServiceImpl implements GatheringService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
         GatheringUser gatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user)
-                .orElseThrow(() -> new EntityNotFoundException("Membership application not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User application not found"));
 
         // 참가 거부 유효성 검증
-        GatheringValidator.validateRejectMembership(gatheringUser);
+        GatheringValidator.validateRejectUser(gatheringUser);
 
         gatheringUser.reject();
 
@@ -311,6 +290,7 @@ public class GatheringServiceImpl implements GatheringService {
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
 
         return gathering.getUsers().stream()
+                .filter(u -> u.getStatus().equals(GatheringUserStatus.APPROVED))
                 .map(GatheringUserDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -346,7 +326,7 @@ public class GatheringServiceImpl implements GatheringService {
                 .orElseThrow(() -> new EntityNotFoundException("모임 참가 신청 내역이 없습니다."));
 
         // 참가 취소 유효성 검증
-        GatheringValidator.validateCancelMembership(gathering, gatheringUser);
+        GatheringValidator.validateCancelUser(gathering, gatheringUser);
 
         // 데이터를 삭제하지 않고 상태를 CANCELLED로 변경
         gatheringUser.cancel();

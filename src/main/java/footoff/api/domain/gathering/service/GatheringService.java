@@ -3,10 +3,7 @@ package footoff.api.domain.gathering.service;
 import java.util.List;
 import java.util.UUID;
 
-import footoff.api.domain.gathering.dto.GatheringDetailResponseDto;
-import footoff.api.domain.gathering.dto.GatheringDto;
-import footoff.api.domain.gathering.dto.GatheringRequestDto;
-import footoff.api.domain.gathering.dto.GatheringUserDto;
+import footoff.api.domain.gathering.dto.*;
 
 /**
  * 모임 관련 비즈니스 로직을 처리하는 서비스 인터페이스
@@ -70,7 +67,7 @@ public interface GatheringService {
      * @param userId 현재 사용자 ID (차단한 사용자 필터링용)
      * @return 모임 목록
      */
-    List<GatheringDto> getAllGatherings(UUID userId);
+    List<GatheringWithApprovedUsersDto> getAllGatherings(UUID userId);
     
     /**
      * 현재 시간 이후의 모임을 조회하는 메소드
@@ -116,7 +113,7 @@ public interface GatheringService {
      * @return 승인된 gathering 정보
      * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      */
-    GatheringUserDto approveMembership(Long gatheringId, UUID userId);
+    GatheringUserDto approveUser(Long gatheringId, UUID userId);
     
     /**
      * 모임 참가 신청을 거부하는 메소드
@@ -126,7 +123,7 @@ public interface GatheringService {
      * @return 거부된 gathering 정보
      * @throws EntityNotFoundException 해당 gathering을 찾을 수 없는 경우
      */
-    GatheringUserDto rejectMembership(Long gatheringId, UUID userId);
+    GatheringUserDto rejectUser(Long gatheringId, UUID userId);
     
     /**
      * 모임 참가를 취소하는 메소드 (참가 신청 전 상태)

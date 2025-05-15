@@ -39,7 +39,7 @@ public class GatheringValidator {
      * @param gatheringUser 모임 참가자
      * @throws InvalidOperationException 취소가 불가능한 경우
      */
-    public static void validateCancelMembership(Gathering gathering, GatheringUser gatheringUser) {
+    public static void validateCancelUser(Gathering gathering, GatheringUser gatheringUser) {
         // 모임 주최자인 경우
         if (GatheringUserRole.ORGANIZER.equals(gatheringUser.getRole())) {
             throw new InvalidOperationException("모임 주최자는 참가를 취소할 수 없습니다.");
@@ -135,7 +135,7 @@ public class GatheringValidator {
      * @param gatheringUser 모임 참가자
      * @throws InvalidOperationException 승인이 불가능한 경우
      */
-    public static void validateApproveMembership(Gathering gathering, GatheringUser gatheringUser) {
+    public static void validateApproveUser(Gathering gathering, GatheringUser gatheringUser) {
         // 이미 승인된 경우
         if (GatheringUserStatus.APPROVED.equals(gatheringUser.getStatus())) {
             throw new InvalidOperationException("이미 승인된 참가 신청입니다.");
@@ -153,7 +153,7 @@ public class GatheringValidator {
      * @param gatheringUser 모임 참가자
      * @throws InvalidOperationException 거부가 불가능한 경우
      */
-    public static void validateRejectMembership(GatheringUser gatheringUser) {
+    public static void validateRejectUser(GatheringUser gatheringUser) {
         // 이미 거부된 경우
         if (GatheringUserStatus.REJECTED.equals(gatheringUser.getStatus())) {
             throw new InvalidOperationException("이미 거부된 참가 신청입니다.");

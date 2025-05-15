@@ -145,6 +145,16 @@ public class User extends BaseEntity {
 	}
 
 	/**
+	 * 사용자의 유저 닉네임을 가져오는 메서드
+	 * 유저 닉네임이 없는 경우 null을 반환
+	 *
+	 * @return 유저 닉네임 또는 null
+	 */
+	public String getNickName() {
+		return this.profile != null ? this.profile.getNickname() : null;
+	}
+
+	/**
 	 * 사용자의 프로필 이미지 URL을 가져오는 메서드
 	 * 프로필이 없는 경우 null을 반환
 	 * 

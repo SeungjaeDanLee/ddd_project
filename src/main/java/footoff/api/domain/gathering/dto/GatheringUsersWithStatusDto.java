@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Schema(description = "모든 모임 정보 불러오기")
-public class GatheringWithApprovedUsersDto {
+public class GatheringUsersWithStatusDto {
     @Schema(description = "모임 고유 식별자", example = "1")
     private final Long id;
 
@@ -55,8 +55,8 @@ public class GatheringWithApprovedUsersDto {
     @Schema(description = "현재 참가자 수", example = "5")
     private final int userCount;
 
-    @Schema(description = "승인된 참가자들")
-    private List<GatheringUserSimpleDto> approvedUsers;
+    @Schema(description = "참가자들")
+    private List<GatheringUserSimpleDto> users;
 
     /**
      * GatheringWithApprovedUsersDto 생성자
@@ -76,10 +76,10 @@ public class GatheringWithApprovedUsersDto {
      * @param userCount 현재 참가자 수
      */
     @Builder
-    public GatheringWithApprovedUsersDto(Long id, String title, String description, String address,
-                        LocalDateTime gatheringDate, Integer minUsers, Integer maxUsers,
-                        Integer fee, String organizerId, String organizerEmail,
-                        LocalDateTime createdAt, LocalDateTime updatedAt, int userCount, List<GatheringUserSimpleDto> approvedUsers) {
+    public GatheringUsersWithStatusDto(Long id, String title, String description, String address,
+                                       LocalDateTime gatheringDate, Integer minUsers, Integer maxUsers,
+                                       Integer fee, String organizerId, String organizerEmail,
+                                       LocalDateTime createdAt, LocalDateTime updatedAt, int userCount, List<GatheringUserSimpleDto> users) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -93,7 +93,7 @@ public class GatheringWithApprovedUsersDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.userCount = userCount;
-        this.approvedUsers = approvedUsers;
+        this.users = users;
     }
 
     /**
@@ -102,10 +102,10 @@ public class GatheringWithApprovedUsersDto {
      * @param gathering 변환할 Gathering 엔티티
      * @return 변환된 GatheringWithApprovedUsersDto 객체
      */
-    public static GatheringWithApprovedUsersDto fromEntity(Gathering gathering) {
+    public static GatheringUsersWithStatusDto fromEntity(Gathering gathering) {
         String address = gathering.getLocation() != null ? gathering.getLocation().getAddress() : null;
 
-        return GatheringWithApprovedUsersDto.builder()
+        return GatheringUsersWithStatusDto.builder()
                 .id(gathering.getId())
                 .title(gathering.getTitle())
                 .description(gathering.getDescription())
@@ -119,7 +119,7 @@ public class GatheringWithApprovedUsersDto {
                 .createdAt(gathering.getCreatedAt())
                 .updatedAt(gathering.getUpdatedAt())
                 .userCount(gathering.getUsers().size())
-                .approvedUsers(gathering.getUsers().stream().map(GatheringUserSimpleDto::fromEntity).collect(Collectors.toList()))
+                .users(gathering.getUsers().stream().map(GatheringUserSimpleDto::fromEntity).collect(Collectors.toList()))
                 .build();
     }
 }

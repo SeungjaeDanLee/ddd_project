@@ -22,6 +22,9 @@ public class GatheringUserSimpleDto {
     @Schema(description = "모임에서의 역할", example = "HOST", allowableValues = {"HOST", "PARTICIPANT"})
     private final GatheringUserRole role;
 
+    @Schema(description = "유저 닉네임")
+    private final String nickName;
+
     @Schema(description = "프로필 이미지 URL")
     private final String profileImage;
 
@@ -31,13 +34,15 @@ public class GatheringUserSimpleDto {
      * @param userId 사용자 ID
      * @param status 참가 상태
      * @param role 모임에서의 역할
+     * @param nickName 유저 닉네임
      * @param profileImage 프로필이미지
      */
     @Builder
-    public GatheringUserSimpleDto(String userId, GatheringUserStatus status, GatheringUserRole role, String profileImage) {
+    public GatheringUserSimpleDto(String userId, GatheringUserStatus status, GatheringUserRole role, String nickName, String profileImage) {
         this.userId = userId;
         this.status = status;
         this.role = role;
+        this.nickName = nickName;
         this.profileImage = profileImage;
     }
 
@@ -52,7 +57,12 @@ public class GatheringUserSimpleDto {
                 .userId(gatheringUser.getUser().getId().toString())
                 .status(gatheringUser.getStatus())
                 .role(gatheringUser.getRole())
-                .profileImage(gatheringUser.getUser().getProfileImageUrl())
+                .nickName(gatheringUser.getUser().getProfile() != null
+                        ? gatheringUser.getUser().getProfile().getNickname()
+                        : null)
+                .profileImage(gatheringUser.getUser().getProfile() != null
+                        ? gatheringUser.getUser().getProfile().getProfileImage()
+                        : null)
                 .build();
     }
 }

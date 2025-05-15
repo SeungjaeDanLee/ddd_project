@@ -67,7 +67,7 @@ public interface GatheringService {
      * @param userId 현재 사용자 ID (차단한 사용자 필터링용)
      * @return 모임 목록
      */
-    List<GatheringWithApprovedUsersDto> getAllGatherings(UUID userId);
+    List<GatheringUsersWithStatusDto> getAllGatherings(UUID userId);
     
     /**
      * 현재 시간 이후의 모임을 조회하는 메소드
@@ -92,7 +92,7 @@ public interface GatheringService {
      * @return 주최자가 생성한 모임 목록
      * @throws EntityNotFoundException 해당 ID의 사용자를 찾을 수 없는 경우
      */
-    List<GatheringDto> getOrganizerGatherings(UUID organizerId);
+    List<GatheringUsersWithStatusDto> getOrganizerGatherings(UUID organizerId);
     
     /**
      * 모임 참가 신청을 처리하는 메소드

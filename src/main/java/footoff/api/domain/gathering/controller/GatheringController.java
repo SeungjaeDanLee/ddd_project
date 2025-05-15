@@ -137,9 +137,9 @@ public class GatheringController {
             content = @Content(schema = @Schema(implementation = GatheringDto.class)))
     })
     @GetMapping
-    public ResponseEntity<BaseResponse<List<GatheringWithApprovedUsersDto>>> getAllGatherings(
+    public ResponseEntity<BaseResponse<List<GatheringUsersWithStatusDto>>> getAllGatherings(
             @Parameter(description = "현재 사용자 ID") @RequestHeader(value = "X-User-Id", required = true) UUID userId) {
-        List<GatheringWithApprovedUsersDto> gatherings = gatheringService.getAllGatherings(userId);
+        List<GatheringUsersWithStatusDto> gatherings = gatheringService.getAllGatherings(userId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatherings));
     }
 
@@ -189,9 +189,9 @@ public class GatheringController {
             content = @Content(schema = @Schema(implementation = GatheringDto.class)))
     })
     @GetMapping("/organizer/{organizerId}")
-    public ResponseEntity<BaseResponse<List<GatheringDto>>> getOrganizerGatherings(
+    public ResponseEntity<BaseResponse<List<GatheringUsersWithStatusDto>>> getOrganizerGatherings(
             @Parameter(description = "조회할 주최자 ID", required = true) @PathVariable UUID organizerId) {
-        List<GatheringDto> gatherings = gatheringService.getOrganizerGatherings(organizerId);
+        List<GatheringUsersWithStatusDto> gatherings = gatheringService.getOrganizerGatherings(organizerId);
         return ResponseEntity.ok(BaseResponse.onSuccess(gatherings));
     }
 

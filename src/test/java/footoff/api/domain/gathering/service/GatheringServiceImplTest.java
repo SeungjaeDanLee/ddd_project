@@ -2,7 +2,7 @@ package footoff.api.domain.gathering.service;
 
 import footoff.api.domain.gathering.dto.GatheringDto;
 import footoff.api.domain.gathering.dto.GatheringRequestDto;
-import footoff.api.domain.gathering.dto.GatheringWithApprovedUsersDto;
+import footoff.api.domain.gathering.dto.GatheringUsersWithStatusDto;
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringLocation;
 import footoff.api.domain.gathering.entity.GatheringUser;
@@ -215,7 +215,7 @@ public class GatheringServiceImplTest {
         when(gatheringRepository.findAllByStatus(GatheringStatus.RECRUITMENT)).thenReturn(gatherings);
 
         // When
-        List<GatheringWithApprovedUsersDto> result = gatheringService.getAllGatherings(null);
+        List<GatheringUsersWithStatusDto> result = gatheringService.getAllGatherings(null);
 
         // Then
         assertNotNull(result);

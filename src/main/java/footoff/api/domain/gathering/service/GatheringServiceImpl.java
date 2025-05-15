@@ -3,7 +3,6 @@ package footoff.api.domain.gathering.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import footoff.api.global.validator.GatheringValidator;
 import footoff.api.global.common.component.DiscordNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import footoff.api.domain.user.entity.Block;
 import footoff.api.domain.user.repository.BlockRepository;
 
 /**
@@ -123,12 +121,12 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "gatheringsCache", key = "#userId", condition = "#userId != null", unless = "#result.isEmpty()")
-    public List<GatheringWithApprovedUsersDto> getAllGatherings(UUID userId) {
+    public List<GatheringUsersWithStatusDto> getAllGatherings(UUID userId) {
         List<Gathering> gatherings = gatheringRepository.findAllGatherings(GatheringStatus.RECRUITMENT, GatheringUserStatus.APPROVED, userId);
-        List<GatheringWithApprovedUsersDto> result = new ArrayList<>(gatherings.size());
+        List<GatheringUsersWithStatusDto> result = new ArrayList<>(gatherings.size());
         
         for (Gathering gathering : gatherings) {
-            result.add(GatheringWithApprovedUsersDto.fromEntity(gathering));
+            result.add(GatheringUsersWithStatusDto.fromEntity(gathering));
         }
         
         return result;
@@ -186,15 +184,15 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<GatheringDto> getOrganizerGatherings(UUID organizerId) {
+    public List<GatheringUsersWithStatusDto> getOrganizerGatherings(UUID organizerId) {
         User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
 
-        List<Gathering> gatherings = gatheringRepository.findByOrganizerAndStatusIsNot(organizer, GatheringStatus.DELETED);
-        List<GatheringDto> result = new ArrayList<>(gatherings.size());
+        List<Gathering> gatherings = gatheringRepository.findWithUsersAndProfilesByOrganizer(organizer, GatheringStatus.DELETED);
+        List<GatheringUsersWithStatusDto> result = new ArrayList<>(gatherings.size());
         
         for (Gathering gathering : gatherings) {
-            result.add(GatheringDto.fromEntity(gathering));
+            result.add(GatheringUsersWithStatusDto.fromEntity(gathering));
         }
         
         return result;

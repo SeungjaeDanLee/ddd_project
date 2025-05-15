@@ -7,10 +7,13 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDto;
+import footoff.api.domain.auth.dto.AppleLoginResponseDto;
 import footoff.api.domain.auth.dto.KakaoDto;
+import footoff.api.domain.auth.dto.AppleDto;
 import footoff.api.domain.auth.entity.UserSocialAccount;
 import footoff.api.domain.auth.repository.UserSocialAccountRepository;
 import footoff.api.domain.auth.util.KakaoUtil;
+import footoff.api.domain.auth.util.AppleUtil;
 import footoff.api.domain.user.entity.User;
 import footoff.api.domain.user.repository.UserRepository;
 import footoff.api.global.common.enums.Language;
@@ -24,13 +27,14 @@ import footoff.api.domain.auth.util.JwtUtil;
 
 /**
  * 인증 서비스 구현체
- * 카카오 로그인 및 계정 생성 관련 비즈니스 로직을 처리합니다.
+ * 카카오, 애플 로그인 및 계정 생성 관련 비즈니스 로직을 처리합니다.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
     private final KakaoUtil kakaoUtil;
+    private final AppleUtil appleUtil;
     private final UserSocialAccountRepository userSocialAccountRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -154,5 +158,70 @@ public class AuthServiceImpl implements AuthService {
         log.info("Created new social account with ID: {}", savedAccount.getId());
         
         return savedAccount;
+    }
+
+    @Override
+    @Transactional
+    public AppleLoginResponseDto appleLogin(String code, HttpServletResponse httpServletResponse) {
+        // 애플 OAuth 토큰 요청
+        AppleDto.OAuthToken oAuthToken = appleUtil.requestToken(code);
+        // ID 토큰을 사용하여 애플 프로필 정보 요청
+        AppleDto.AppleProfile appleProfile = appleUtil.requestProfile(oAuthToken.getId_token());
+        
+        // 애플 프로필 유효성 검사
+        if (appleProfile == null) {
+            log.error("Failed to retrieve AppleProfile");
+            throw new RuntimeException("애플 프로필 정보를 가져오는데 실패했습니다.");
+        }
+        
+        String appleId = appleProfile.getSub();
+        if (appleId == null) {
+            log.error("AppleProfile has null ID");
+            throw new RuntimeException("애플 ID를 가져오는데 실패했습니다.");
+        }
+        
+        // 애플 프로필에서 이메일 정보 가져오기 (없을 수도 있음)
+        String email = appleProfile.getEmail() != null ? appleProfile.getEmail() : "";
+        
+        // 기존 계정 찾기 또는 새로 생성
+        UserSocialAccount appleAccount = userSocialAccountRepository.findBySocialProviderAndSocialProviderId(
+            SocialProvider.APPLE, appleId)
+            .orElseGet(() -> createAppleAccount(appleId, email));
+
+        // JWT 토큰 생성 및 헤더에 추가
+        String token = jwtUtil.createAccessToken(appleId, "USER");
+        httpServletResponse.setHeader("Authorization", token);
+
+        // 로그인 응답 DTO 반환
+        return new AppleLoginResponseDto(appleAccount.getUser().getId().toString(),
+                                       oAuthToken.getAccess_token(), 
+                                       oAuthToken.getRefresh_token());
+    }
+
+    @Override
+    @Transactional
+    public UserSocialAccount createAppleAccount(String appleId, String email) {
+        // 새로운 User 엔티티 생성
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .email(email)
+                .status(UserActivityStatus.ACTIVE)
+                .language(Language.KO)
+                .isVerified(true)
+                .lastLoginAt(LocalDateTime.now())
+                .build();
+        
+        // User 엔티티 저장
+        userRepository.save(user);
+        
+        // UserSocialAccount 엔티티 생성
+        UserSocialAccount appleAccount = UserSocialAccount.builder()
+                .user(user)
+                .socialProvider(SocialProvider.APPLE)
+                .socialProviderId(appleId)
+                .build();
+        
+        // UserSocialAccount 엔티티 저장
+        return userSocialAccountRepository.save(appleAccount);
     }
 } 

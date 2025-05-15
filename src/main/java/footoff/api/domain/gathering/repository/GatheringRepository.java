@@ -28,12 +28,15 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
 
     /**
      * 모집중인 모임 목록 조회(차단된 인원을 제외, 승인된 인원만 포함)
+     * 성능 최적화: DISTINCT 사용, 불필요한 LEFT JOIN 제거, 필요한 엔티티만 JOIN FETCH
      */
     @Query("""
             SELECT DISTINCT g FROM Gathering g
-            LEFT JOIN FETCH g.users gu
+            JOIN FETCH g.organizer
+            LEFT JOIN FETCH g.location
+            LEFT JOIN g.users gu
             WHERE g.status = :status
-            AND gu.status = :gatheringUserStatus
+            AND (gu IS NULL OR gu.status = :gatheringUserStatus)
             AND g.organizer.id NOT IN (
                 SELECT b.blocked.id FROM Block b
                 WHERE b.user.id = :userId AND b.isBlock = true

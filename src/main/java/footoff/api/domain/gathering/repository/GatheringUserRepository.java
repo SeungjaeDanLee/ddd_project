@@ -21,29 +21,32 @@ import footoff.api.global.common.enums.GatheringUserStatus;
 public interface GatheringUserRepository extends JpaRepository<GatheringUser, Long> {
     
     /**
-     * 특정 모임의 모든 참가자 정보를 조회
+     * 특정 모임의 모든 참가자 정보를 조회 (연관관계 미리 로딩)
      * 
      * @param gathering 조회할 모임
      * @return 모임 참가자 목록
      */
-    List<GatheringUser> findByGathering(Gathering gathering);
+    @Query("SELECT gu FROM GatheringUser gu JOIN FETCH gu.user WHERE gu.gathering = :gathering")
+    List<GatheringUser> findByGathering(@Param("gathering") Gathering gathering);
     
     /**
-     * 특정 사용자가 참가한 모든 모임 정보를 조회
+     * 특정 사용자가 참가한 모든 모임 정보를 조회 (연관관계 미리 로딩)
      * 
      * @param user 조회할 사용자
      * @return 사용자가 참가한 모임 목록
      */
-    List<GatheringUser> findByUser(User user);
+    @Query("SELECT gu FROM GatheringUser gu JOIN FETCH gu.gathering g JOIN FETCH g.organizer WHERE gu.user = :user")
+    List<GatheringUser> findByUser(@Param("user") User user);
     
     /**
-     * 특정 모임에서 특정 상태인 모든 참가자 정보를 조회
+     * 특정 모임에서 특정 상태인 모든 참가자 정보를 조회 (연관관계 미리 로딩)
      * 
      * @param gathering 조회할 모임
      * @param status 조회할 참가 상태
      * @return 해당 상태의 참가자 목록
      */
-    List<GatheringUser> findByGatheringAndStatus(Gathering gathering, GatheringUserStatus status);
+    @Query("SELECT gu FROM GatheringUser gu JOIN FETCH gu.user WHERE gu.gathering = :gathering AND gu.status = :status")
+    List<GatheringUser> findByGatheringAndStatus(@Param("gathering") Gathering gathering, @Param("status") GatheringUserStatus status);
     
     /**
      * 특정 모임의 특정 사용자 참가 정보를 조회
@@ -70,4 +73,13 @@ public interface GatheringUserRepository extends JpaRepository<GatheringUser, Lo
      */
     @Query("SELECT COUNT(gu) FROM GatheringUser gu WHERE gu.gathering.id = :gatheringId")
     int countByGatheringId(@Param("gatheringId") Long gatheringId);
+    
+    /**
+     * 특정 모임에 참가한 모든 사용자 ID 목록을 한번에 조회
+     *
+     * @param gatheringId 모임 ID
+     * @return 참가자 ID 목록
+     */
+    @Query("SELECT gu.user.id FROM GatheringUser gu WHERE gu.gathering.id = :gatheringId")
+    List<UUID> findUserIdsByGatheringId(@Param("gatheringId") Long gatheringId);
 } 

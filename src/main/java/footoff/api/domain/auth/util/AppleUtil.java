@@ -43,6 +43,7 @@ public class AppleUtil {
     private String privateKey;
 
     public AppleDto.OAuthToken requestToken(String code) {
+        log.info("애플 토큰 요청 시작: code={}", code);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -55,33 +56,36 @@ public class AppleUtil {
         params.add("client_secret", generateClientSecret());
 
         HttpEntity<MultiValueMap<String, String>> appleTokenRequest = new HttpEntity<>(params, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                "https://appleid.apple.com/auth/token",
-                HttpMethod.POST,
-                appleTokenRequest,
-                String.class);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        AppleDto.OAuthToken oAuthToken = null;
+        log.info("애플 토큰 요청 파라미터: {}", params);
 
         try {
-            oAuthToken = objectMapper.readValue(response.getBody(), AppleDto.OAuthToken.class);
-            log.info("oAuthToken : " + oAuthToken.getAccess_token());
-        } catch (JsonProcessingException e) {
-            log.error("Failed to parse Apple token response: {}", response.getBody(), e);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    "https://appleid.apple.com/auth/token",
+                    HttpMethod.POST,
+                    appleTokenRequest,
+                    String.class);
+            
+            log.info("애플 토큰 응답 상태: {}", response.getStatusCode());
+            log.info("애플 토큰 응답 본문: {}", response.getBody());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+            AppleDto.OAuthToken oAuthToken = objectMapper.readValue(response.getBody(), AppleDto.OAuthToken.class);
+            log.info("애플 토큰 파싱 성공: access_token={}", oAuthToken.getAccess_token());
+            return oAuthToken;
+        } catch (Exception e) {
+            log.error("애플 토큰 요청 실패: {}", e.getMessage(), e);
             throw new AuthHandler(ErrorStatus._PARSING_ERROR);
         }
-        return oAuthToken;
     }
 
     public AppleDto.AppleProfile requestProfile(String idToken) {
+        log.info("애플 프로필 요청 시작: idToken={}", idToken);
         try {
-            // ID 토큰을 디코딩하여 사용자 정보 추출
             String[] parts = idToken.split("\\.");
             String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+            log.info("애플 프로필 페이로드: {}", payload);
             
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -89,26 +93,24 @@ public class AppleUtil {
             AppleDto.AppleProfile appleProfile = objectMapper.readValue(payload, AppleDto.AppleProfile.class);
             
             if (appleProfile != null) {
-                log.info("Successfully parsed Apple profile, sub: {}", appleProfile.getSub());
+                log.info("애플 프로필 파싱 성공: sub={}", appleProfile.getSub());
             } else {
-                log.error("Failed to parse Apple profile");
+                log.error("애플 프로필 파싱 실패: null 반환");
                 throw new AuthHandler(ErrorStatus._PARSING_ERROR);
             }
             
             return appleProfile;
         } catch (Exception e) {
-            log.error("Error parsing Apple profile: {}", e.getMessage());
-            log.error("Stack trace: {}", Arrays.toString(e.getStackTrace()));
+            log.error("애플 프로필 파싱 실패: {}", e.getMessage(), e);
             throw new AuthHandler(ErrorStatus._PARSING_ERROR);
         }
     }
 
     private String generateClientSecret() {
+        log.info("애플 클라이언트 시크릿 생성 시작");
         // TODO: JWT 토큰 생성 로직 구현
-        // 1. 현재 시간과 만료 시간 설정
-        // 2. JWT 헤더 설정 (alg: ES256, kid: keyId)
-        // 3. JWT 클레임 설정 (iss: teamId, iat: 현재시간, exp: 만료시간, aud: https://appleid.apple.com, sub: clientId)
-        // 4. ES256 알고리즘으로 서명
-        return "dummy_client_secret"; // 임시 반환값
+        String clientSecret = "dummy_client_secret"; // 임시 반환값
+        log.info("애플 클라이언트 시크릿 생성 완료");
+        return clientSecret;
     }
 } 

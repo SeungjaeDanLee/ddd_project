@@ -137,7 +137,11 @@ public class AppleUtil {
             String privateKeyPEM = privateKey
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s", "");
+                .replaceAll("\\s", "")
+                .replaceAll("\\n", "")
+                .replaceAll("\\r", "");
+
+            log.info("Private Key PEM: {}", privateKeyPEM);
 
             byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
             KeyFactory keyFactory = KeyFactory.getInstance("EC");

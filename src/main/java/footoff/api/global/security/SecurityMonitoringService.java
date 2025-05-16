@@ -40,7 +40,7 @@ public class SecurityMonitoringService {
     private final Set<String> ipBlacklist = new HashSet<>();
 
     // IP 차단 임계값
-    private static final int IP_BLOCK_THRESHOLD = 20;
+    private static final int IP_BLOCK_THRESHOLD = 30;
 
     // 초당 요청 제한 수
     private static final int RATE_LIMIT_PER_SECOND = 100;

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDto;
+import footoff.api.domain.auth.dto.AppleLoginResponseDto;
 import footoff.api.domain.auth.service.AuthService;
 import footoff.api.global.common.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,6 +50,28 @@ public class AuthController {
             @Parameter(description = "카카오 인증 코드", required = true) @RequestParam("code") String accessCode, 
             HttpServletResponse httpServletResponse) {
         KaKaoLoginResponseDto result = authService.kakaoLogin(accessCode, httpServletResponse);
+        return BaseResponse.onSuccess(result);
+    }
+
+    /**
+     * 애플 로그인 처리 엔드포인트
+     * 애플 로그인 후 리다이렉트되는 URL에서 사용됩니다.
+     *
+     * @param code 애플 인증 코드
+     * @param httpServletResponse HTTP 응답 객체
+     * @return 로그인 결과 정보
+     */
+    @Operation(summary = "애플 로그인", description = "애플 인증 코드를 이용하여 로그인을 처리합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "로그인 성공", 
+            content = @Content(schema = @Schema(implementation = AppleLoginResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "로그인 실패")
+    })
+    @GetMapping("/login/apple")
+    public BaseResponse<AppleLoginResponseDto> appleLogin(
+            @Parameter(description = "애플 인증 코드", required = true) @RequestParam("code") String code,
+            HttpServletResponse httpServletResponse) {
+        AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
         return BaseResponse.onSuccess(result);
     }
 }

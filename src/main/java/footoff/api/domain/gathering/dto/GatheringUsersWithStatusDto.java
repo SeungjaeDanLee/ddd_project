@@ -55,6 +55,9 @@ public class GatheringUsersWithStatusDto {
     @Schema(description = "현재 참가자 수", example = "5")
     private final int userCount;
 
+    @Schema(description = "모임 상태")
+    private final String gatheringStatus;
+
     @Schema(description = "참가자들")
     private List<GatheringUserSimpleDto> users;
 
@@ -74,12 +77,13 @@ public class GatheringUsersWithStatusDto {
      * @param createdAt 모임 생성 시간
      * @param updatedAt 모임 정보 마지막 수정 시간
      * @param userCount 현재 참가자 수
+     * @param gatheringStatus 모임 상태
      */
     @Builder
     public GatheringUsersWithStatusDto(Long id, String title, String description, String address,
                                        LocalDateTime gatheringDate, Integer minUsers, Integer maxUsers,
                                        Integer fee, String organizerId, String organizerEmail,
-                                       LocalDateTime createdAt, LocalDateTime updatedAt, int userCount, List<GatheringUserSimpleDto> users) {
+                                       LocalDateTime createdAt, LocalDateTime updatedAt, int userCount, String gatheringStatus, List<GatheringUserSimpleDto> users) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -93,6 +97,7 @@ public class GatheringUsersWithStatusDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.userCount = userCount;
+        this.gatheringStatus = gatheringStatus;
         this.users = users;
     }
 
@@ -119,6 +124,7 @@ public class GatheringUsersWithStatusDto {
                 .createdAt(gathering.getCreatedAt())
                 .updatedAt(gathering.getUpdatedAt())
                 .userCount(gathering.getUsers().size())
+                .gatheringStatus(gathering.getStatus() != null ? gathering.getStatus().name() : null)
                 .users(gathering.getUsers().stream().map(GatheringUserSimpleDto::fromEntity).collect(Collectors.toList()))
                 .build();
     }

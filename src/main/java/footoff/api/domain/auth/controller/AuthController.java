@@ -71,7 +71,11 @@ public class AuthController {
     public BaseResponse<AppleLoginResponseDto> appleLogin(
             @Parameter(description = "애플 인증 코드", required = true) @RequestParam("code") String code,
             HttpServletResponse httpServletResponse) {
-        AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
-        return BaseResponse.onSuccess(result);
+				try {
+					AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
+					return BaseResponse.onSuccess(result);
+				} catch (Exception e) {
+					return BaseResponse.onFailure("APPLE_LOGIN_FAILED", e.getMessage());
+				}
     }
 }

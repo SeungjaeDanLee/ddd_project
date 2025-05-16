@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
+import java.util.Objects;
+
 /**
  * 모임 장소 정보를 담는 엔티티 클래스
  * 모임의 위치 정보(위도, 경도, 주소 등)를 관리한다
@@ -71,5 +73,43 @@ public class GatheringLocation extends BaseEntity {
         this.longitude = longitude;
         this.address = address;
         this.placeName = placeName;
+    }
+    
+    /**
+     * 모임 설정 메서드 (양방향 관계 설정)
+     * 
+     * @param gathering 연결할 모임
+     */
+    public void setGathering(Gathering gathering) {
+        this.gathering = gathering;
+        
+        // 양방향 관계 설정
+        if (gathering != null && gathering.getLocation() != this) {
+            gathering.setLocation(this);
+        }
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GatheringLocation location = (GatheringLocation) o;
+        
+        // 이미 저장된 엔티티는 ID로 비교
+        if (id != null && location.id != null) {
+            return Objects.equals(id, location.id);
+        }
+        
+        // 아직 저장되지 않은 경우 gathering으로 비교
+        return Objects.equals(gathering, location.gathering);
+    }
+
+    @Override
+    public int hashCode() {
+        // 저장된 엔티티는 ID로, 아직 저장되지 않은 경우 gathering으로 해시코드 계산
+        if (id != null) {
+            return Objects.hash(id);
+        }
+        return Objects.hash(gathering != null ? gathering.getId() : 0);
     }
 } 

@@ -13,6 +13,8 @@ import footoff.api.global.common.enums.GatheringStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringUser;
@@ -55,6 +57,7 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = {"gatheringsCache", "upcomingGatheringsCache"}, allEntries = true)
     public GatheringDto createGathering(GatheringRequestDto requestDto, UUID organizerId) {
         User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
@@ -209,6 +212,7 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "gatheringsCache", key = "#userId", condition = "#userId != null")
     public GatheringUserDto joinGathering(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
@@ -247,6 +251,10 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "gatheringsCache", allEntries = true),
+        @CacheEvict(value = "upcomingGatheringsCache", allEntries = true)
+    })
     public GatheringUserDto approveUser(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
@@ -274,6 +282,7 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "gatheringsCache", allEntries = true)
     public GatheringUserDto rejectUser(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
@@ -336,8 +345,20 @@ public class GatheringServiceImpl implements GatheringService {
         return GatheringDetailResponseDto.fromEntity(gathering, currentUserId);
     }
 
+    /**
+     * 사용자 요청으로 모임을 취소하는 메소드
+     *
+     * @param gatheringId 모임 ID
+     * @param userId 사용자 ID
+     * @throws EntityNotFoundException 해당 ID의 모임을 찾을 수 없는 경우
+     * @throws InvalidOperationException 모임 주최자가 아닌 경우
+     */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "gatheringsCache", allEntries = true),
+        @CacheEvict(value = "upcomingGatheringsCache", allEntries = true)
+    })
     public void cancelGatheringByUser(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
@@ -358,8 +379,19 @@ public class GatheringServiceImpl implements GatheringService {
         sendRefundNotification(user, gathering);
     }
 
+    /**
+     * 모임 탈퇴 처리 메소드
+     *
+     * @param gatheringId 모임 ID
+     * @param userId 사용자 ID
+     * @throws EntityNotFoundException 해당 ID의 모임이나 참가 기록을 찾을 수 없는 경우
+     */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "gatheringsCache", allEntries = true),
+        @CacheEvict(value = "upcomingGatheringsCache", allEntries = true)
+    })
     public void leaveGathering(Long gatheringId, UUID userId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));
@@ -392,6 +424,10 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "gatheringsCache", allEntries = true),
+        @CacheEvict(value = "upcomingGatheringsCache", allEntries = true)
+    })
     public GatheringDto updateGathering(Long id, GatheringRequestDto requestDto, UUID userId) {
         Gathering gathering = gatheringRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
@@ -440,8 +476,20 @@ public class GatheringServiceImpl implements GatheringService {
         return GatheringDto.fromEntity(gathering);
     }
 
+    /**
+     * 모임을 삭제(상태변경)하는 메소드
+     *
+     * @param id 모임 ID
+     * @param userId 사용자 ID (주최자 확인용)
+     * @throws EntityNotFoundException 해당 ID의 모임이나 사용자를 찾을 수 없는 경우
+     * @throws InvalidOperationException 권한이 없는 경우
+     */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "gatheringsCache", allEntries = true),
+        @CacheEvict(value = "upcomingGatheringsCache", allEntries = true)
+    })
     public void deleteGathering(Long id, UUID userId) {
         Gathering gathering = gatheringRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + id));
@@ -493,6 +541,10 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "gatheringsCache", allEntries = true),
+        @CacheEvict(value = "upcomingGatheringsCache", allEntries = true)
+    })
     public void cancelGatheringBySystem(Long gatheringId) {
         Gathering gathering = gatheringRepository.findById(gatheringId)
                 .orElseThrow(() -> new EntityNotFoundException("Gathering not found with id: " + gatheringId));

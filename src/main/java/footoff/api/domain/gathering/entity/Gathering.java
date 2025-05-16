@@ -2,6 +2,7 @@ package footoff.api.domain.gathering.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import footoff.api.domain.user.entity.User;
@@ -129,16 +130,25 @@ public class Gathering extends BaseEntity {
     }
     
     /**
-     * 모임에 새로운 user를 추가하는 메소드
+     * 모임에 새로운 user를 추가하는 메소드 (양방향 관계 설정)
      * 
      * @param gatheringUser 추가할 gathering 정보
      */
     public void addUser(GatheringUser gatheringUser) {
+        // 양방향 관계 처리
+        if (gatheringUser.getGathering() != this) {
+            gatheringUser = GatheringUser.builder()
+                    .gathering(this)
+                    .user(gatheringUser.getUser())
+                    .status(gatheringUser.getStatus())
+                    .role(gatheringUser.getRole())
+                    .build();
+        }
         this.users.add(gatheringUser);
     }
     
     /**
-     * 모임에서 user를 제거하는 메소드
+     * 모임에서 user를 제거하는 메소드 (양방향 관계 정리)
      * 
      * @param gatheringUser 제거할 gathering 정보
      */
@@ -147,11 +157,40 @@ public class Gathering extends BaseEntity {
     }
     
     /**
-     * 모임 장소를 설정하는 메소드
+     * 모임 장소를 설정하는 메소드 (양방향 관계 설정)
      * 
      * @param location 모임 장소
      */
     public void setLocation(GatheringLocation location) {
+        // 기존 위치 제거
+        if (this.location != null) {
+            this.location = null;
+        }
+        
+        // 양방향 관계 처리
+        if (location != null && location.getGathering() != this) {
+            location = GatheringLocation.builder()
+                    .gathering(this)
+                    .latitude(location.getLatitude())
+                    .longitude(location.getLongitude())
+                    .address(location.getAddress())
+                    .placeName(location.getPlaceName())
+                    .build();
+        }
+        
         this.location = location;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Gathering gathering = (Gathering) o;
+        return Objects.equals(id, gathering.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 } 

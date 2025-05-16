@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 /**
  * 모임 참가자 정보를 담는 엔티티 클래스
  * 사용자의 모임 참가 상태와 역할을 관리한다
@@ -86,5 +88,31 @@ public class GatheringUser extends BaseEntity {
      */
     public void changeRole(GatheringUserRole role) {
         this.role = role;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GatheringUser that = (GatheringUser) o;
+        
+        if (id != null && that.id != null) {
+            // 이미 저장된 엔티티는 ID로 비교
+            return Objects.equals(id, that.id);
+        }
+        
+        // 아직 저장되지 않은 경우 모임과 사용자로 비교
+        return Objects.equals(gathering, that.gathering) && 
+               Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        // 저장된 엔티티는 ID로, 아직 저장되지 않은 경우 모임과 사용자로 해시코드 계산
+        if (id != null) {
+            return Objects.hash(id);
+        }
+        return Objects.hash(gathering != null ? gathering.getId() : 0, 
+                           user != null ? user.getId() : 0);
     }
 } 

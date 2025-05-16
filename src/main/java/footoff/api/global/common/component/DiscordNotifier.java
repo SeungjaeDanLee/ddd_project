@@ -51,6 +51,32 @@ public class DiscordNotifier {
         sendDiscordMessage(serverWebhookUrl, message);
     }
 
+    /**
+     * 보안 관련 알림을 디스코드로 전송
+     * 의심스러운 IP 접근이나 차단된 IP 등에 대한 정보를 알립니다.
+     *
+     * @param data 보안 알림 데이터 (IP, 이벤트 수, URI, 상세 정보 등)
+     */
+    public void sendDiscordSecurityMessage(Map<String, String> data) {
+        String message = String.format(
+                """
+                🛡️ 보안 알림
+                🔒 IP 주소: %s
+                🔢 의심 이벤트 수: %s
+                🔗 마지막 요청 URI: %s
+                ℹ️ 상세 정보: %s
+                ⏰ 시간: %s
+                """,
+                data.getOrDefault("ip", "알 수 없음"),
+                data.getOrDefault("eventCount", "0"),
+                data.getOrDefault("lastUri", "알 수 없음"),
+                data.getOrDefault("details", "내용 없음"),
+                java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+
+        sendDiscordMessage(serverWebhookUrl, message);
+    }
+
     private void sendDiscordMessage(String webhookUrl, String content) {
         Map<String, String> body = new HashMap<>();
         body.put("content", content);

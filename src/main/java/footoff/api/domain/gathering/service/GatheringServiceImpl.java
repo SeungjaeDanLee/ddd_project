@@ -126,7 +126,7 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional(readOnly = true)
     @Cacheable(value = "gatheringsCache", key = "#userId", condition = "#userId != null", unless = "#result.isEmpty()")
     public List<GatheringUsersWithStatusDto> getAllGatherings(UUID userId) {
-        List<Gathering> gatherings = gatheringRepository.findAllGatherings(GatheringStatus.RECRUITMENT, GatheringUserStatus.APPROVED, GatheringUserStatus.CANCELLED, userId);
+        List<Gathering> gatherings = gatheringRepository.findAllGatherings(GatheringStatus.RECRUITMENT, GatheringUserStatus.APPROVED, userId);
         List<GatheringUsersWithStatusDto> result = new ArrayList<>(gatherings.size());
         
         for (Gathering gathering : gatherings) {

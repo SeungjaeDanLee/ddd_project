@@ -22,6 +22,14 @@ import footoff.api.domain.auth.exception.ErrorStatus;
 
 import lombok.extern.slf4j.Slf4j;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 
 @Component
 @Slf4j
@@ -107,10 +115,47 @@ public class AppleUtil {
     }
 
     private String generateClientSecret() {
-        log.info("애플 클라이언트 시크릿 생성 시작");
-        // TODO: JWT 토큰 생성 로직 구현
-        String clientSecret = "dummy_client_secret"; // 임시 반환값
-        log.info("애플 클라이언트 시크릿 생성 완료");
-        return clientSecret;
+        try {
+            // 현재 시간과 만료 시간 설정
+            long now = System.currentTimeMillis() / 1000;
+            long exp = now + 3600; // 1시간 후 만료
+
+            // JWT 헤더 생성
+            Map<String, Object> header = new HashMap<>();
+            header.put("kid", keyId);
+            header.put("alg", "ES256");
+
+            // JWT 클레임 생성
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("iss", teamId);
+            claims.put("iat", now);
+            claims.put("exp", exp);
+            claims.put("aud", "https://appleid.apple.com");
+            claims.put("sub", clientId);
+
+            // Private Key 파싱
+            String privateKeyPEM = privateKey
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s", "");
+
+            byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+            PrivateKey key = keyFactory.generatePrivate(keySpec);
+
+            // JWT 토큰 생성
+            String token = Jwts.builder()
+                    .setHeader(header)
+                    .setClaims(claims)
+                    .signWith(SignatureAlgorithm.ES256, key)
+                    .compact();
+
+            log.info("클라이언트 시크릿 생성 성공");
+            return token;
+        } catch (Exception e) {
+            log.error("클라이언트 시크릿 생성 실패: {}", e.getMessage(), e);
+            throw new AuthHandler(ErrorStatus._PARSING_ERROR);
+        }
     }
 } 

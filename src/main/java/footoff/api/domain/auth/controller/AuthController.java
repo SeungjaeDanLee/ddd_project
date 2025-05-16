@@ -1,6 +1,7 @@
 package footoff.api.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,7 +70,7 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = AppleLoginResponseDto.class))),
         @ApiResponse(responseCode = "400", description = "로그인 실패")
     })
-    @GetMapping("/login/apple")
+    @PostMapping("/login/apple")
     public BaseResponse<AppleLoginResponseDto> appleLogin(
             @Parameter(description = "애플 인증 코드", required = true) @RequestParam("code") String code,
             HttpServletResponse httpServletResponse) {

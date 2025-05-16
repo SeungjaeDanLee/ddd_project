@@ -40,10 +40,10 @@ public class SecurityMonitoringService {
     private final Set<String> ipBlacklist = new HashSet<>();
 
     // IP 차단 임계값
-    private static final int IP_BLOCK_THRESHOLD = 10;
+    private static final int IP_BLOCK_THRESHOLD = 20;
 
     // 초당 요청 제한 수
-    private static final int RATE_LIMIT_PER_SECOND = 30;
+    private static final int RATE_LIMIT_PER_SECOND = 100;
 
     // 알려진 악의적 패턴 정규식
     private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(

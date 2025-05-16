@@ -32,3 +32,4 @@ logging:
     org.springframework.security: INFO
     org.apache.coyote.http11: INFO
     org.apache.tomcat: INFO
+    footoff.api: DEBUG

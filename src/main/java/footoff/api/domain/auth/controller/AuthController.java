@@ -74,7 +74,9 @@ public class AuthController {
             @Parameter(description = "애플 인증 코드", required = true) @RequestParam("code") String code,
             HttpServletResponse httpServletResponse) {
 				try {
+					log.info("애플 로그인 시도: code={}", code);
 					AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
+					log.info("애플 로그인 성공");
 					return BaseResponse.onSuccess(result);
 				} catch (Exception e) {
 					log.error("애플 로그인 실패: {}", e.getMessage(), e);

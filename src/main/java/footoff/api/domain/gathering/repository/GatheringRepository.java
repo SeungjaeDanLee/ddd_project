@@ -45,13 +45,8 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
                 SELECT b.user.id FROM Block b
                 WHERE b.blocked.id = :userId AND b.isBlock = true
             )
-            AND g.id IN (
-                SELECT gu2.gathering.id FROM GatheringUser gu2
-                WHERE gu2.user.id = :userId
-                AND gu2.status = :gatheringUserStatus2
-            )
             """)
-    List<Gathering> findAllGatherings(@Param("status") GatheringStatus status, @Param("gatheringUserStatus") GatheringUserStatus gatheringUserStatus, @Param("gatheringUserStatus2") GatheringUserStatus gatheringUserStatus2, @Param("userId") UUID userId);
+    List<Gathering> findAllGatherings(@Param("status") GatheringStatus status, @Param("gatheringUserStatus") GatheringUserStatus gatheringUserStatus, @Param("userId") UUID userId);
 
     /**
      * 특정 날짜 이후의 모임 목록 조회

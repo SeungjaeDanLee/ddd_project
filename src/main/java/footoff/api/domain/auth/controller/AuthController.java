@@ -18,11 +18,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 인증 관련 HTTP 요청을 처리하는 컨트롤러
  * 소셜 로그인 및 인증 관련 기능을 제공합니다.
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
@@ -75,6 +77,7 @@ public class AuthController {
 					AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
 					return BaseResponse.onSuccess(result);
 				} catch (Exception e) {
+					log.error("애플 로그인 실패: {}", e.getMessage(), e);
 					return BaseResponse.onFailure("APPLE_LOGIN_FAILED", e.getMessage());
 				}
     }

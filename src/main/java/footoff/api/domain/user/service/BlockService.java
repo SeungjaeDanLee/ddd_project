@@ -7,6 +7,7 @@ import footoff.api.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -55,5 +56,16 @@ public class BlockService {
 		blockRepository.save(block);
 
 		return block;
+	}
+
+	/**
+	 * 사용자가 차단한 유저 목록을 조회합니다.
+	 * 
+	 * @param userId 사용자 ID
+	 * @return 차단한 유저 목록
+	 */
+	@Transactional
+	public List<Block> getBlockedUsers(UUID userId) {
+		return blockRepository.findByUserId(userId);
 	}
 }

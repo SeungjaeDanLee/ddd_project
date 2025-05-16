@@ -1,5 +1,6 @@
 package footoff.api.domain.user.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -109,6 +110,32 @@ public class BlockController {
 		try {
 			blockService.disableBlock(userId, blockedId);
 			return ResponseEntity.ok(BaseResponse.onSuccess(null));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(BaseResponse.onFailure("ERROR", e.getMessage()));
+		}
+	}
+
+	/**
+	 * 사용자가 차단한 유저 목록을 조회하는 API 엔드포인트
+	 * 
+	 * @param userId 사용자 ID
+	 * @return 차단한 유저 목록 또는 에러 메시지가 포함된 응답 엔티티
+	 */
+	@Operation(summary = "차단한 유저 목록 조회", description = "사용자가 차단한 유저 목록을 조회합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "조회 성공", 
+			content = @Content(schema = @Schema(implementation = BlockResponseDto.class))),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청")
+	})
+	@GetMapping("/{userId}")
+	public ResponseEntity<BaseResponse<List<BlockResponseDto>>> getBlockedUsers(
+		@Parameter(description = "사용자 ID", required = true) @PathVariable UUID userId) {
+		try {
+			List<Block> blocks = blockService.getBlockedUsers(userId);
+			List<BlockResponseDto> responseDtos = blocks.stream()
+				.map(BlockResponseDto::fromEntity)
+				.toList();
+			return ResponseEntity.ok(BaseResponse.onSuccess(responseDtos));
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(BaseResponse.onFailure("ERROR", e.getMessage()));
 		}

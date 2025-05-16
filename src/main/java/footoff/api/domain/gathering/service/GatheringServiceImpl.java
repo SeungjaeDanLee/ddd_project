@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import footoff.api.domain.gathering.dto.*;
 import footoff.api.domain.gathering.entity.GatheringLocation;
@@ -125,7 +126,7 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional(readOnly = true)
     @Cacheable(value = "gatheringsCache", key = "#userId", condition = "#userId != null", unless = "#result.isEmpty()")
     public List<GatheringUsersWithStatusDto> getAllGatherings(UUID userId) {
-        List<Gathering> gatherings = gatheringRepository.findAllGatherings(GatheringStatus.RECRUITMENT, GatheringUserStatus.APPROVED, userId);
+        List<Gathering> gatherings = gatheringRepository.findAllGatherings(GatheringStatus.RECRUITMENT, GatheringUserStatus.APPROVED, GatheringUserStatus.CANCELLED, userId);
         List<GatheringUsersWithStatusDto> result = new ArrayList<>(gatherings.size());
         
         for (Gathering gathering : gatherings) {
@@ -168,7 +169,14 @@ public class GatheringServiceImpl implements GatheringService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
-        List<GatheringUser> gatheringUsers = gatheringUserRepository.findByUser(user);
+        // RECRUITMENT, CANCELLED, DELETED 상태의 모임만 조회
+        List<GatheringStatus> statusList = List.of(
+            GatheringStatus.RECRUITMENT,
+            GatheringStatus.CANCELLED,
+            GatheringStatus.DELETED
+        );
+        
+        List<GatheringUser> gatheringUsers = gatheringUserRepository.findByUserAndGatheringStatusIn(user, statusList);
         List<GatheringDto> result = new ArrayList<>(gatheringUsers.size());
         
         for (GatheringUser gatheringUser : gatheringUsers) {
@@ -191,7 +199,9 @@ public class GatheringServiceImpl implements GatheringService {
         User organizer = userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + organizerId));
 
-        List<Gathering> gatherings = gatheringRepository.findWithUsersAndProfilesByOrganizer(organizer, GatheringStatus.DELETED);
+        // RECRUITMENT, CANCELLED 상태만 조회
+        List<GatheringStatus> statusList = List.of(GatheringStatus.RECRUITMENT, GatheringStatus.CANCELLED);
+        List<Gathering> gatherings = gatheringRepository.findWithUsersAndProfilesByOrganizer(organizer, statusList);
         List<GatheringUsersWithStatusDto> result = new ArrayList<>(gatherings.size());
         
         for (Gathering gathering : gatherings) {
@@ -221,24 +231,32 @@ public class GatheringServiceImpl implements GatheringService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
         // 이미 참가 신청한 경우 예외 발생
-        if (gatheringUserRepository.findByGatheringAndUser(gathering, user).isPresent()) {
-            throw new InvalidOperationException("이미 참가 신청한 모임입니다.");
+        Optional<GatheringUser> existingGatheringUser = gatheringUserRepository.findByGatheringAndUser(gathering, user);
+        if (existingGatheringUser.isPresent()) {
+            GatheringUser gatheringUser = existingGatheringUser.get();
+            // 취소된 상태가 아닌 경우에만 예외 발생
+            if (gatheringUser.getStatus() != GatheringUserStatus.CANCELLED) {
+                throw new InvalidOperationException("이미 참가 신청한 모임입니다.");
+            }
+            // 취소된 상태라면 PENDING으로 변경
+            gatheringUser.setStatus(GatheringUserStatus.PENDING);
+            return GatheringUserDto.fromEntity(gatheringUser);
+        } else {
+            // 모임 참가 유효성 검증
+            GatheringValidator.validateJoinGathering(gathering);
+
+            GatheringUser gatheringUser = GatheringUser.builder()
+                    .gathering(gathering)
+                    .user(user)
+                    .status(GatheringUserStatus.PENDING)
+                    .role(GatheringUserRole.PARTICIPANT)
+                    .build();
+
+            gathering.addUser(gatheringUser);
+            gatheringUserRepository.save(gatheringUser);
+
+            return GatheringUserDto.fromEntity(gatheringUser);
         }
-
-        // 모임 참가 유효성 검증
-        GatheringValidator.validateJoinGathering(gathering);
-
-        GatheringUser gatheringUser = GatheringUser.builder()
-                .gathering(gathering)
-                .user(user)
-                .status(GatheringUserStatus.PENDING)
-                .role(GatheringUserRole.PARTICIPANT)
-                .build();
-
-        gathering.addUser(gatheringUser);
-        gatheringUserRepository.save(gatheringUser);
-
-        return GatheringUserDto.fromEntity(gatheringUser);
     }
 
     /**

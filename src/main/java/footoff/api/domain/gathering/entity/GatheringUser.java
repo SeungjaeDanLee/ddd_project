@@ -82,6 +82,15 @@ public class GatheringUser extends BaseEntity {
     }
     
     /**
+     * gathering 상태를 직접 변경하는 메소드
+     * 
+     * @param status 새로운 상태
+     */
+    public void setStatus(GatheringUserStatus status) {
+        this.status = status;
+    }
+    
+    /**
      * gathering 역할을 변경하는 메소드
      * 
      * @param role 새로운 역할

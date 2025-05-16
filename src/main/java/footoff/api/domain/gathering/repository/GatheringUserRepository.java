@@ -13,6 +13,7 @@ import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringUser;
 import footoff.api.domain.user.entity.User;
 import footoff.api.global.common.enums.GatheringUserStatus;
+import footoff.api.global.common.enums.GatheringStatus;
 
 /**
  * 모임 참가자 정보에 접근하는 레포지토리 인터페이스
@@ -37,6 +38,22 @@ public interface GatheringUserRepository extends JpaRepository<GatheringUser, Lo
      */
     @Query("SELECT gu FROM GatheringUser gu JOIN FETCH gu.gathering g JOIN FETCH g.organizer WHERE gu.user = :user")
     List<GatheringUser> findByUser(@Param("user") User user);
+    
+    /**
+     * 특정 사용자가 참가한 모임 중 특정 상태의 모임만 조회 (연관관계 미리 로딩)
+     * 
+     * @param user 조회할 사용자
+     * @param statusList 조회할 모임 상태 목록
+     * @return 사용자가 참가한 모임 중 특정 상태의 모임 목록
+     */
+    @Query("SELECT gu FROM GatheringUser gu " +
+           "JOIN FETCH gu.gathering g " +
+           "JOIN FETCH g.organizer " +
+           "WHERE gu.user = :user " +
+           "AND g.status IN :statusList")
+    List<GatheringUser> findByUserAndGatheringStatusIn(
+            @Param("user") User user,
+            @Param("statusList") List<GatheringStatus> statusList);
     
     /**
      * 특정 모임에서 특정 상태인 모든 참가자 정보를 조회 (연관관계 미리 로딩)

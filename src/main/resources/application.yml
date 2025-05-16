@@ -33,3 +33,8 @@ logging:
     org.apache.coyote.http11: INFO
     org.apache.tomcat: INFO
     footoff.api: DEBUG
+  file:
+    name: logs/application.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

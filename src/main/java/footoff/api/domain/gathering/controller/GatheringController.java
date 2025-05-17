@@ -338,4 +338,21 @@ public class GatheringController {
         List<GatheringUserDto> users = gatheringService.getGatheringUsers(gatheringId);
         return ResponseEntity.ok(BaseResponse.onSuccess(users));
     }
+
+	/*
+	 * 사용자 참여 모임 정보 조회
+	 * @param userId 사용자 ID
+	 * @return 사용자 참여 모임 정보
+	 */
+	@Operation(summary = "사용자 참여 모임 정보 조회", description = "사용자의 참여 모임 정보를 조회합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "사용자 참여 모임 정보 조회 성공", 
+			content = @Content(schema = @Schema(implementation = GatheringUserDto.class))),
+	})
+	@GetMapping("/join-user/{userId}")
+	public ResponseEntity<BaseResponse<List<GatheringUserDto>>> getJoinUserGatherings(
+			@Parameter(description = "조회할 사용자 ID", required = true) @PathVariable UUID userId) {
+		List<GatheringUserDto> gatherings = gatheringService.getJoinUserGatherings(userId);
+		return ResponseEntity.ok(BaseResponse.onSuccess(gatherings));
+	}
 } 

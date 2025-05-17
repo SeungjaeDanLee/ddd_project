@@ -161,4 +161,12 @@ public interface GatheringService {
      * @throws EntityNotFoundException 해당 모임을 찾을 수 없는 경우
      */
     void cancelGatheringBySystem(Long gatheringId);
+
+	/**
+	 * 사용자 참여 모임 정보 조회
+	 * 
+	 * @param userId 사용자 ID
+	 * @return 사용자 참여 모임 정보
+	 */
+	List<GatheringUserDto> getJoinUserGatherings(UUID userId);
 } 

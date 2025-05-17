@@ -3,6 +3,7 @@ package footoff.api.domain.gathering.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -626,4 +627,17 @@ public class GatheringServiceImpl implements GatheringService {
         
         discordNotifier.sendDiscordMoneyMessage(data);
     }
+
+	/**
+	 * 사용자 참여 모임 정보 조회
+	 * 
+	 * @param userId 사용자 ID
+	 * @return 사용자 참여 모임 정보
+	 */
+	public List<GatheringUserDto> getJoinUserGatherings(UUID userId) {
+		return gatheringUserRepository.findActiveGatheringsByUserId(userId)
+				.stream()
+				.map(GatheringUserDto::fromEntity)
+				.collect(Collectors.toList());
+	}
 } 

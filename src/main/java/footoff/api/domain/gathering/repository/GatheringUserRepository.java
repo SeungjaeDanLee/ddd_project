@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import footoff.api.domain.gathering.dto.GatheringUserDto;
 import footoff.api.domain.gathering.entity.Gathering;
 import footoff.api.domain.gathering.entity.GatheringUser;
 import footoff.api.domain.user.entity.User;
@@ -99,4 +100,25 @@ public interface GatheringUserRepository extends JpaRepository<GatheringUser, Lo
      */
     @Query("SELECT gu.user.id FROM GatheringUser gu WHERE gu.gathering.id = :gatheringId")
     List<UUID> findUserIdsByGatheringId(@Param("gatheringId") Long gatheringId);
+
+	/**
+	 * 사용자 ID로 참여 모임 정보 조회
+	 * 
+	 * @param userId 사용자 ID
+	 * @return 사용자 참여 모임 정보
+	 */
+	List<GatheringUserDto> findByUserId(UUID userId);
+
+	/**
+	 * 사용자 ID로 참여 모임 정보 조회 (삭제되지 않은 모임만)
+	 * 
+	 * @param userId 사용자 ID
+	 * @return 사용자 참여 모임 정보 (삭제되지 않은 모임)
+	 */
+	@Query("SELECT gu FROM GatheringUser gu " +
+		   "JOIN FETCH gu.gathering g " +
+		   "WHERE gu.user.id = :userId " +
+		   "AND gu.role = 'PARTICIPANT' " +
+		   "AND g.status != 'DELETED'")
+	List<GatheringUser> findActiveGatheringsByUserId(@Param("userId") UUID userId);
 } 

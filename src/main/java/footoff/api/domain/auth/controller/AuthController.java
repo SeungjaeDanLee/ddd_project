@@ -4,7 +4,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 
 import footoff.api.domain.auth.dto.KaKaoLoginResponseDto;
 import footoff.api.domain.auth.dto.AppleLoginResponseDto;
@@ -36,24 +38,24 @@ public class AuthController {
 
     /**
      * 카카오 로그인 처리 엔드포인트
-     * 카카오 로그인 후 리다이렉트되는 URL에서 사용됩니다.
+     * 카카오 로그인 후 커스텀 스킴으로 리다이렉트됩니다.
      *
      * @param accessCode 카카오 인증 코드
      * @param httpServletResponse HTTP 응답 객체
-     * @return 로그인 결과 정보
      */
-    @Operation(summary = "카카오 로그인", description = "카카오 인증 코드를 이용하여 로그인을 처리합니다.")
+    @Operation(summary = "카카오 로그인", description = "카카오 인증 코드를 이용하여 로그인을 처리하고 커스텀 스킴으로 리다이렉트합니다.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "로그인 성공", 
-            content = @Content(schema = @Schema(implementation = KaKaoLoginResponseDto.class))),
+        @ApiResponse(responseCode = "303", description = "커스텀 스킴으로 리다이렉트"),
         @ApiResponse(responseCode = "400", description = "로그인 실패")
     })
     @GetMapping("/login/kakao")
-    public BaseResponse<KaKaoLoginResponseDto> kakaoLogin(
+    @ResponseStatus(HttpStatus.SEE_OTHER)
+    public void kakaoLogin(
             @Parameter(description = "카카오 인증 코드", required = true) @RequestParam("code") String accessCode, 
             HttpServletResponse httpServletResponse) {
         KaKaoLoginResponseDto result = authService.kakaoLogin(accessCode, httpServletResponse);
-        return BaseResponse.onSuccess(result);
+        String redirectUrl = String.format("footoff://login?token=%s&provider=kakao", result.getAccessToken());
+        httpServletResponse.setHeader("Location", redirectUrl);
     }
 
     /**

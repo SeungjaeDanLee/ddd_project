@@ -54,7 +54,8 @@ public class AuthController {
             @Parameter(description = "카카오 인증 코드", required = true) @RequestParam("code") String accessCode, 
             HttpServletResponse httpServletResponse) {
         KaKaoLoginResponseDto result = authService.kakaoLogin(accessCode, httpServletResponse);
-        String redirectUrl = String.format("footoff://login?token=%s&provider=kakao", result.getAccessToken());
+        String redirectUrl = String.format("footoff://login?userId=%s&token=%s&refreshToken=%s&provider=kakao", 
+            result.getUserId(), result.getAccessToken(), result.getRefreshToken());
         httpServletResponse.setHeader("Location", redirectUrl);
 		httpServletResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
     }

@@ -59,6 +59,47 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
     List<Gathering> findByGatheringDateBetween(LocalDateTime startDate, LocalDateTime endDate);
     
     /**
+     * 특정 날짜 이전이면서 특정 상태인 모임 목록 조회 (만료 처리용)
+     */
+    @Query("SELECT g FROM Gathering g WHERE g.gatheringDate < :date AND g.status = :status")
+    List<Gathering> findByGatheringDateBeforeAndStatus(@Param("date") LocalDateTime date, @Param("status") GatheringStatus status);
+    
+    /**
+     * 특정 날짜 범위 내이면서 특정 상태인 모임 목록 조회 (최소 인원 미달 자동 취소용)
+     */
+    @Query("SELECT g FROM Gathering g LEFT JOIN FETCH g.users WHERE g.gatheringDate BETWEEN :startDate AND :endDate AND g.status = :status")
+    List<Gathering> findByGatheringDateBetweenAndStatus(
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate, 
+            @Param("status") GatheringStatus status);
+    
+    /**
+     * 특정 날짜 범위 내이면서 승인된 참가자 수가 최소 인원보다 적은 모임 목록 조회 (최소 인원 미달 자동 취소용)
+     * 
+     * @param startDate 시작 날짜
+     * @param endDate 종료 날짜
+     * @param status 모임 상태
+     * @param userStatus 참가자 상태 (APPROVED)
+     * @return 최소 인원 미달 모임 목록
+     */
+    @Query("""
+            SELECT DISTINCT g FROM Gathering g 
+            LEFT JOIN FETCH g.users gu 
+            WHERE g.gatheringDate BETWEEN :startDate AND :endDate 
+            AND g.status = :status 
+            AND g.minUsers > (
+                SELECT COUNT(gu2) FROM GatheringUser gu2 
+                WHERE gu2.gathering = g 
+                AND gu2.status = :userStatus
+            )
+            """)
+    List<Gathering> findGatheringsUnderMinUsers(
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate, 
+            @Param("status") GatheringStatus status,
+            @Param("userStatus") GatheringUserStatus userStatus);
+    
+    /**
      * 특정 사용자가 주최한 모임 목록 조회
      */
     List<Gathering> findByOrganizer(User organizer);

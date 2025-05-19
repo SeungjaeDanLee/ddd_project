@@ -56,6 +56,7 @@ public class AuthController {
         KaKaoLoginResponseDto result = authService.kakaoLogin(accessCode, httpServletResponse);
         String redirectUrl = String.format("footoff://login?token=%s&provider=kakao", result.getAccessToken());
         httpServletResponse.setHeader("Location", redirectUrl);
+		httpServletResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
     }
 
     /**

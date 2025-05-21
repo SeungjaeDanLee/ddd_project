@@ -74,7 +74,7 @@ public class AuthController {
         @ApiResponse(responseCode = "303", description = "커스텀 스킴으로 리다이렉트"),
         @ApiResponse(responseCode = "400", description = "로그인 실패")
     })
-    @GetMapping("/login/apple")
+    @PostMapping("/login/apple")
     @ResponseStatus(HttpStatus.SEE_OTHER)
     public void appleLogin(
             @Parameter(description = "애플 인증 코드", required = true) @RequestParam("code") String code,

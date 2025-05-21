@@ -68,24 +68,27 @@ public class AuthController {
      * @param httpServletResponse HTTP 응답 객체
      * @return 로그인 결과 정보
      */
-    @Operation(summary = "애플 로그인", description = "애플 인증 코드를 이용하여 로그인을 처리합니다.")
+    @Operation(summary = "애플 로그인", description = "애플 인증 코드를 이용하여 로그인을 처리하고 커스텀 스킴으로 리다이렉트합니다.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "로그인 성공", 
-            content = @Content(schema = @Schema(implementation = AppleLoginResponseDto.class))),
+        @ApiResponse(responseCode = "303", description = "커스텀 스킴으로 리다이렉트"),
         @ApiResponse(responseCode = "400", description = "로그인 실패")
     })
-    @PostMapping("/login/apple")
-    public BaseResponse<AppleLoginResponseDto> appleLogin(
+    @GetMapping("/login/apple")
+    @ResponseStatus(HttpStatus.SEE_OTHER)
+    public void appleLogin(
             @Parameter(description = "애플 인증 코드", required = true) @RequestParam("code") String code,
             HttpServletResponse httpServletResponse) {
-				try {
-					log.info("애플 로그인 시도: code={}", code);
-					AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
-					log.info("애플 로그인 성공");
-					return BaseResponse.onSuccess(result);
-				} catch (Exception e) {
-					log.error("애플 로그인 실패: {}", e.getMessage(), e);
-					return BaseResponse.onFailure("APPLE_LOGIN_FAILED", e.getMessage());
-				}
+        try {
+            log.info("애플 로그인 시도: code={}", code);
+            AppleLoginResponseDto result = authService.appleLogin(code, httpServletResponse);
+            String redirectUrl = String.format("footoff://login?userId=%s&token=%s&refreshToken=%s&provider=apple", 
+                result.getUserId(), result.getAccessToken(), result.getRefreshToken());
+            httpServletResponse.setHeader("Location", redirectUrl);
+            httpServletResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
+            log.info("애플 로그인 성공");
+        } catch (Exception e) {
+            log.error("애플 로그인 실패: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }

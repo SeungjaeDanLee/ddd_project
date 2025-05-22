@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +35,7 @@ public class BatchService {
     @Transactional
     public CompletableFuture<Integer> expirePassedGatherings() {
         long startTime = System.currentTimeMillis();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         
         // DB 쿼리에서 직접 조건 필터링 (모집중 상태이면서 모임 시간이 현재보다 이전인 모임들)
         List<Gathering> passedGatherings = gatheringRepository.findByGatheringDateBeforeAndStatus(
@@ -82,7 +83,7 @@ public class BatchService {
     @Transactional
     public CompletableFuture<Integer> autoCancelIfUnderMin() {
         long startTime = System.currentTimeMillis();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         LocalDateTime tomorrow = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime dayAfterTomorrow = tomorrow.plusDays(1);
 

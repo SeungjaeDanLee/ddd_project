@@ -14,7 +14,7 @@ public class BatchScheduler {
     private final BatchService batchService;
 
     // 매일 자정에 실행
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void runDailyJob() {
         log.info("배치 작업 실행됨");
 
@@ -25,7 +25,7 @@ public class BatchScheduler {
     }
     
     // 매일 오후 6시에 실행
-    @Scheduled(cron = "0 00 18 * * *")
+    @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
     public void checkInsufficientUsers() {
         log.info("최소 인원 미달 모임 자동 취소 배치 작업 실행됨");
         

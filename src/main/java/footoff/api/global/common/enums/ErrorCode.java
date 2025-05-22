@@ -15,6 +15,9 @@ public enum ErrorCode {
     VALIDATION_ERROR(400, "C003", "Validation error"),
     ENTITY_NOT_FOUND(404, "C004", "Entity not found"),
     INVALID_OPERATION(400, "C005", "Invalid operation"),
+    NOT_FOUND(404, "C006", "Resource not found"),
+    METHOD_NOT_ALLOWED(405, "C007", "Method not allowed"),
+    BAD_REQUEST(400, "C008", "Bad request"),
     
     // Authentication
     UNAUTHORIZED(401, "A001", "Unauthorized access"),

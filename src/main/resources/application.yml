@@ -12,6 +12,9 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+  web:
+    resources:
+      add-mappings: false
 
 # 액추에이터 설정
 management:

@@ -1,5 +1,8 @@
 # Squash API Server
 
+> ⚠️ **주의**: 이 프로젝트는 원본 프로젝트를 복사한 카피캣 프로젝트입니다.  
+> 원본 저장소: https://github.com/Dehkartes/foot-off-1-backend.git
+
 ## 프로젝트 소개
 이 프로젝트는 Spring Boot 기반의 백엔드 API 서버로, 카카오 OAuth 로그인 기능을 포함한 사용자 인증 시스템을 구현합니다.
 Squash는 모임을 만들고 참여할 수 있는 플랫폼으로, 다양한 모임 관리 기능을 제공합니다.
@@ -127,8 +130,8 @@ http://localhost:8080/swagger-ui/index.html
 ### 환경 설정
 1. 프로젝트 클론
    ```bash
-   git clone https://github.com/Dehkartes/foot-off-1-backend.git
-   cd backend
+   git clone https://github.com/SeungjaeDanLee/ddd_project.git
+   cd ddd_project
    ```
 
 2. 환경 변수 설정 (.env 파일)
